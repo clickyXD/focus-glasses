@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Focus Glasses</title>
+<style>
+  :root {
+    --bg: #f6f6f4; --card: #ffffff; --text: #1d1d1b; --muted: #6b6b66;
+    --border: #dcdcd6; --accent: #1d6fd1; --accent-text: #ffffff;
+    --good: #1f8a4c; --warn: #b26a00; --bad: #c0392b;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #161615; --card: #222220; --text: #ececea; --muted: #a3a39d;
+      --border: #3a3a37; --accent: #4f95e8; --accent-text: #0b0b0a;
+      --good: #4cc27f; --warn: #e0a040; --bad: #e86b5c;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg); color: var(--text); font-size: 16px;
+  }
+  main { max-width: 520px; margin: 0 auto; padding: 16px; }
+  h1 { font-size: 22px; font-weight: 600; margin: 4px 0 12px; }
+  h2 { font-size: 15px; font-weight: 600; margin: 0 0 10px; color: var(--muted); }
+  .card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+    padding: 14px; margin-bottom: 12px;
+  }
+  .row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  #connState { font-size: 14px; color: var(--muted); }
+  #connState.on { color: var(--good); }
+  button {
+    font: inherit; border-radius: 8px; border: 1px solid var(--border);
+    background: var(--card); color: var(--text); padding: 12px 10px; cursor: pointer;
+  }
+  button.primary { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
+  button:disabled { opacity: 0.45; cursor: default; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .stat { border: 1px solid var(--border); border-radius: 8px; padding: 10px; }
+  .stat .label { font-size: 13px; color: var(--muted); }
+  .stat .value { font-size: 22px; font-weight: 600; margin-top: 2px; }
+  #pitchValue { font-size: 40px; font-weight: 600; }
+  #pitchBarWrap { height: 10px; background: var(--border); border-radius: 5px; margin-top: 8px; position: relative; overflow: hidden; }
+  #pitchBar { position: absolute; top: 0; bottom: 0; left: 50%; width: 0; background: var(--accent); }
+  #thresholdMark { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--bad); }
+  .down { color: var(--bad); }
+  label { display: block; font-size: 14px; color: var(--muted); margin-bottom: 4px; }
+  input {
+    width: 100%; font: inherit; padding: 10px; border-radius: 8px;
+    border: 1px solid var(--border); background: var(--bg); color: var(--text);
+  }
+  .field { margin-bottom: 10px; }
+  #message { font-size: 14px; color: var(--muted); min-height: 20px; margin-top: 8px; }
+  #message.error { color: var(--bad); }
+</style>
+</head>
+<body>
+<main>
+  <h1>Focus Glasses</h1>
+
+  <div class="card">
+    <div class="row">
+      <span id="connState">Not connected</span>
+      <div style="display:flex; gap:8px;">
+        <button id="connectBtn" class="primary">Connect</button>
+        <button id="disconnectBtn" disabled>Disconnect</button>
+      </div>
+    </div>
+    <div id="message"></div>
+  </div>
+
+  <div class="card">
+    <h2>Head angle</h2>
+    <div class="row">
+      <span id="pitchValue">--°</span>
+      <span id="stateValue">--</span>
+    </div>
+    <div id="pitchBarWrap"><div id="pitchBar"></div><div id="thresholdMark"></div></div>
+  </div>
+
+  <div class="card">
+    <h2>Status</h2>
+    <div class="grid">
+      <div class="stat"><div class="label">Session</div><div class="value" id="sessionValue">--</div></div>
+      <div class="stat"><div class="label">Head down for</div><div class="value" id="downValue">--</div></div>
+      <div class="stat"><div class="label">Alerts</div><div class="value" id="alertsValue">--</div></div>
+      <div class="stat"><div class="label">Battery</div><div class="value" id="batteryValue">--</div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Controls</h2>
+    <div class="grid">
+      <button class="primary cmd" data-cmd="1">Start session</button>
+      <button class="cmd" data-cmd="2">Stop session</button>
+      <button class="cmd" data-cmd="3">Calibrate</button>
+      <button class="cmd" data-cmd="5">Snooze 10 min</button>
+      <button class="cmd" data-cmd="4" style="grid-column: span 2;">Test buzz</button>
+    </div>
+    <div style="font-size:13px; color:var(--muted); margin-top:8px;">
+      Calibrate: wear the glasses, look straight ahead, then tap.
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Settings</h2>
+    <div class="field">
+      <label for="angleInput">Head-down angle (degrees, 5–80)</label>
+      <input id="angleInput" type="number" min="5" max="80" inputmode="numeric">
+    </div>
+    <div class="field">
+      <label for="delayInput">Delay before first alert (seconds, 1–3600)</label>
+      <input id="delayInput" type="number" min="1" max="3600" inputmode="numeric">
+    </div>
+    <div class="field">
+      <label for="repeatInput">Repeat alert every (seconds, 5–3600)</label>
+      <input id="repeatInput" type="number" min="5" max="3600" inputmode="numeric">
+    </div>
+    <div class="field">
+      <label for="effectInput">Alert pattern (effect number, 1–123)</label>
+      <input id="effectInput" type="number" min="1" max="123" inputmode="numeric">
+    </div>
+    <button id="saveBtn" class="primary" style="width:100%;">Save settings</button>
+  </div>
+</main>
+
+<script>
+const SERVICE_UUID  = 'a3c40001-6f2b-4d8e-9c1a-5b7e2f9d3a10';
+const CONTROL_UUID  = 'a3c40002-6f2b-4d8e-9c1a-5b7e2f9d3a10';
+const SETTINGS_UUID = 'a3c40003-6f2b-4d8e-9c1a-5b7e2f9d3a10';
+const STATUS_UUID   = 'a3c40004-6f2b-4d8e-9c1a-5b7e2f9d3a10';
+
+let device = null;
+let controlChar = null;
+let settingsChar = null;
+let statusChar = null;
+let currentAngle = 25;
+
+const $ = (id) => document.getElementById(id);
+const cmdButtons = Array.from(document.querySelectorAll('.cmd'));
+
+function showMessage(text, isError) {
+  $('message').textContent = text || '';
+  $('message').className = isError ? 'error' : '';
+}
+
+function setConnectedUI(connected) {
+  $('connState').textContent = connected ? 'Connected' : 'Not connected';
+  $('connState').className = connected ? 'on' : '';
+  $('connectBtn').disabled = connected;
+  $('disconnectBtn').disabled = !connected;
+  $('saveBtn').disabled = !connected;
+  cmdButtons.forEach(b => b.disabled = !connected);
+  if (!connected) {
+    ['sessionValue', 'downValue', 'alertsValue', 'batteryValue', 'stateValue'].forEach(id => $(id).textContent = '--');
+    $('pitchValue').textContent = '--°';
+    $('pitchBar').style.width = '0';
+  }
+}
+
+async function connect() {
+  if (!navigator.bluetooth) {
+    showMessage('Bluetooth is not available in this browser. Use Chrome on Android or Windows, or the Bluefy browser on iPhone.', true);
+    return;
+  }
+  try {
+    showMessage('Choose FocusGlasses from the list...');
+    device = await navigator.bluetooth.requestDevice({
+      filters: [{ services: [SERVICE_UUID] }, { namePrefix: 'FocusGlasses' }],
+      optionalServices: [SERVICE_UUID]
+    });
+    device.addEventListener('gattserverdisconnected', onDisconnected);
+    await connectGatt();
+  } catch (err) {
+    showMessage('Connection failed: ' + err.message, true);
+  }
+}
+
+async function connectGatt() {
+  showMessage('Connecting...');
+  const server = await device.gatt.connect();
+  const service = await server.getPrimaryService(SERVICE_UUID);
+  controlChar  = await service.getCharacteristic(CONTROL_UUID);
+  settingsChar = await service.getCharacteristic(SETTINGS_UUID);
+  statusChar   = await service.getCharacteristic(STATUS_UUID);
+
+  statusChar.addEventListener('characteristicvaluechanged', (e) => parseStatus(e.target.value));
+  await statusChar.startNotifications();
+
+  await readSettings();
+  setConnectedUI(true);
+  showMessage('');
+}
+
+function onDisconnected() {
+  setConnectedUI(false);
+  showMessage('Disconnected. Tap Connect to reconnect.', true);
+}
+
+async function disconnect() {
+  if (device && device.gatt.connected) device.gatt.disconnect();
+}
+
+function parseStatus(view) {
+  if (view.byteLength < 8) return;
+  const flags   = view.getUint8(0);
+  const pitch   = view.getInt16(1, true) / 10;
+  const downSec = view.getUint16(3, true);
+  const battery = view.getUint8(5);
+  const alerts  = view.getUint16(6, true);
+
+  const session = (flags & 1) !== 0;
+  const isDown  = (flags & 2) !== 0;
+  const snoozed = (flags & 4) !== 0;
+
+  $('pitchValue').textContent = pitch.toFixed(1) + '°';
+  $('pitchValue').className = isDown ? 'down' : '';
+  $('stateValue').textContent = isDown ? 'Head down' : 'Level';
+  $('stateValue').className = isDown ? 'down' : '';
+
+  // Bar: center = 0°, right edge = +90° (down), left edge = -90° (up)
+  const clamped = Math.max(-90, Math.min(90, pitch));
+  const pct = Math.abs(clamped) / 90 * 50;
+  $('pitchBar').style.width = pct + '%';
+  $('pitchBar').style.left = clamped >= 0 ? '50%' : (50 - pct) + '%';
+  $('thresholdMark').style.left = (50 + currentAngle / 90 * 50) + '%';
+
+  $('sessionValue').textContent = snoozed ? 'Snoozed' : (session ? 'On' : 'Off');
+  $('downValue').textContent = isDown ? formatSeconds(downSec) : '--';
+  $('alertsValue').textContent = alerts;
+  $('batteryValue').textContent = battery + '%';
+}
+
+function formatSeconds(s) {
+  const m = Math.floor(s / 60);
+  const r = s % 60;
+  return m > 0 ? m + 'm ' + r + 's' : r + 's';
+}
+
+async function sendCommand(cmd) {
+  if (!controlChar) return;
+  try {
+    await controlChar.writeValue(new Uint8Array([cmd]));
+    if (cmd === 3) showMessage('Calibrated.');
+  } catch (err) {
+    showMessage('Command failed: ' + err.message, true);
+  }
+}
+
+async function readSettings() {
+  const view = await settingsChar.readValue();
+  if (view.byteLength < 6) return;
+  currentAngle = view.getUint8(0);
+  $('angleInput').value  = currentAngle;
+  $('delayInput').value  = view.getUint16(1, true);
+  $('repeatInput').value = view.getUint16(3, true);
+  $('effectInput').value = view.getUint8(5);
+}
+
+function readField(id, min, max, name) {
+  const v = Number($(id).value);
+  if (!Number.isInteger(v) || v < min || v > max) {
+    throw new Error(name + ' must be a whole number from ' + min + ' to ' + max + '.');
+  }
+  return v;
+}
+
+async function saveSettings() {
+  try {
+    const angle  = readField('angleInput', 5, 80, 'Angle');
+    const delay  = readField('delayInput', 1, 3600, 'Delay');
+    const repeat = readField('repeatInput', 5, 3600, 'Repeat');
+    const effect = readField('effectInput', 1, 123, 'Pattern');
+
+    const buf = new ArrayBuffer(6);
+    const view = new DataView(buf);
+    view.setUint8(0, angle);
+    view.setUint16(1, delay, true);
+    view.setUint16(3, repeat, true);
+    view.setUint8(5, effect);
+    await settingsChar.writeValue(buf);
+    await readSettings();
+    showMessage('Settings saved.');
+  } catch (err) {
+    showMessage(err.message, true);
+  }
+}
+
+$('connectBtn').addEventListener('click', connect);
+$('disconnectBtn').addEventListener('click', disconnect);
+$('saveBtn').addEventListener('click', saveSettings);
+cmdButtons.forEach(b => b.addEventListener('click', () => sendCommand(Number(b.dataset.cmd))));
+['angleInput', 'delayInput', 'repeatInput', 'effectInput'].forEach(id =>
+  $(id).addEventListener('input', () => showMessage('')));
+
+setConnectedUI(false);
+</script>
+</body>
+</html>
