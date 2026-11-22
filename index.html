@@ -54,6 +54,22 @@
   }
   .field { margin-bottom: 10px; }
   #message { font-size: 14px; color: var(--muted); min-height: 20px; margin-top: 8px; }
+  input[type=range] {
+    padding: 0; border: none; background: transparent; height: 32px;
+    accent-color: var(--accent); cursor: pointer;
+  }
+  .ticks { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); padding: 0 7px; }
+  .patterns { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  label.pattern { position: relative; margin: 0; color: var(--text); font-size: 15px; }
+  .pattern input { position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none; }
+  .pattern span {
+    display: block; text-align: center; padding: 12px 6px; cursor: pointer;
+    border: 1px solid var(--border); border-radius: 8px; background: var(--card);
+  }
+  .pattern input:checked + span { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
+  .pattern input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .pattern input:disabled + span { opacity: 0.45; cursor: default; }
+  .hint { font-size: 13px; color: var(--muted); margin: -2px 0 12px; }
   #message.error { color: var(--bad); }
 </style>
 </head>
@@ -120,9 +136,25 @@
       <input id="repeatInput" type="number" min="5" max="3600" inputmode="numeric">
     </div>
     <div class="field">
-      <label for="effectInput">Alert pattern (effect number, 1–123)</label>
-      <input id="effectInput" type="number" min="1" max="123" inputmode="numeric">
+      <label for="strengthInput">Buzz strength: <span id="strengthValue">10</span> of 10</label>
+      <input id="strengthInput" type="range" min="1" max="10" step="1" value="10" list="strengthTicks">
+      <datalist id="strengthTicks">
+        <option value="1"></option><option value="2"></option><option value="3"></option>
+        <option value="4"></option><option value="5"></option><option value="6"></option>
+        <option value="7"></option><option value="8"></option><option value="9"></option>
+        <option value="10"></option>
+      </datalist>
+      <div class="ticks"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span></div>
     </div>
+    <div class="field">
+      <label>Alert pattern</label>
+      <div class="patterns" role="radiogroup" aria-label="Alert pattern">
+        <label class="pattern"><input type="radio" name="pattern" value="0" checked><span>1 long</span></label>
+        <label class="pattern"><input type="radio" name="pattern" value="1"><span>3 short</span></label>
+        <label class="pattern"><input type="radio" name="pattern" value="2"><span>2 medium</span></label>
+      </div>
+    </div>
+    <div class="hint">Changing strength or pattern saves it and plays a test buzz.</div>
     <button id="saveBtn" class="primary" style="width:100%;">Save settings</button>
   </div>
 </main>
@@ -141,6 +173,15 @@ let currentAngle = 25;
 
 const $ = (id) => document.getElementById(id);
 const cmdButtons = Array.from(document.querySelectorAll('.cmd'));
+const patternInputs = Array.from(document.querySelectorAll('input[name="pattern"]'));
+
+// Bluetooth allows one operation at a time; run them in order
+let bleQueue = Promise.resolve();
+function queued(fn) {
+  const p = bleQueue.then(fn);
+  bleQueue = p.catch(() => {});
+  return p;
+}
 
 function showMessage(text, isError) {
   $('message').textContent = text || '';
@@ -154,6 +195,8 @@ function setConnectedUI(connected) {
   $('disconnectBtn').disabled = !connected;
   $('saveBtn').disabled = !connected;
   cmdButtons.forEach(b => b.disabled = !connected);
+  $('strengthInput').disabled = !connected;
+  patternInputs.forEach(r => r.disabled = !connected);
   if (!connected) {
     ['sessionValue', 'downValue', 'alertsValue', 'batteryValue', 'stateValue'].forEach(id => $(id).textContent = '--');
     $('pitchValue').textContent = '--°';
@@ -243,7 +286,7 @@ function formatSeconds(s) {
 async function sendCommand(cmd) {
   if (!controlChar) return;
   try {
-    await controlChar.writeValue(new Uint8Array([cmd]));
+    await queued(() => controlChar.writeValue(new Uint8Array([cmd])));
     if (cmd === 3) showMessage('Calibrated.');
   } catch (err) {
     showMessage('Command failed: ' + err.message, true);
@@ -251,13 +294,24 @@ async function sendCommand(cmd) {
 }
 
 async function readSettings() {
-  const view = await settingsChar.readValue();
-  if (view.byteLength < 6) return;
+  const view = await queued(() => settingsChar.readValue());
+  if (view.byteLength < 7) {
+    showMessage('Glasses firmware is out of date. Upload the latest glasses_ble.ino.', true);
+    return;
+  }
   currentAngle = view.getUint8(0);
   $('angleInput').value  = currentAngle;
   $('delayInput').value  = view.getUint16(1, true);
   $('repeatInput').value = view.getUint16(3, true);
-  $('effectInput').value = view.getUint8(5);
+  $('strengthInput').value = view.getUint8(5);
+  $('strengthValue').textContent = view.getUint8(5);
+  const pattern = view.getUint8(6);
+  patternInputs.forEach(r => r.checked = Number(r.value) === pattern);
+}
+
+function selectedPattern() {
+  const r = patternInputs.find(x => x.checked);
+  return r ? Number(r.value) : 0;
 }
 
 function readField(id, min, max, name) {
@@ -268,22 +322,25 @@ function readField(id, min, max, name) {
   return v;
 }
 
-async function saveSettings() {
+async function saveSettings(playTest) {
   try {
-    const angle  = readField('angleInput', 5, 80, 'Angle');
-    const delay  = readField('delayInput', 1, 3600, 'Delay');
-    const repeat = readField('repeatInput', 5, 3600, 'Repeat');
-    const effect = readField('effectInput', 1, 123, 'Pattern');
+    const angle   = readField('angleInput', 5, 80, 'Angle');
+    const delay   = readField('delayInput', 1, 3600, 'Delay');
+    const repeat  = readField('repeatInput', 5, 3600, 'Repeat');
+    const level   = readField('strengthInput', 1, 10, 'Strength');
+    const pattern = selectedPattern();
 
-    const buf = new ArrayBuffer(6);
+    const buf = new ArrayBuffer(7);
     const view = new DataView(buf);
     view.setUint8(0, angle);
     view.setUint16(1, delay, true);
     view.setUint16(3, repeat, true);
-    view.setUint8(5, effect);
-    await settingsChar.writeValue(buf);
+    view.setUint8(5, level);
+    view.setUint8(6, pattern);
+    await queued(() => settingsChar.writeValue(buf));
+    if (playTest) await sendCommand(4);
     await readSettings();
-    showMessage('Settings saved.');
+    showMessage(playTest ? 'Saved. Playing test buzz.' : 'Settings saved.');
   } catch (err) {
     showMessage(err.message, true);
   }
@@ -291,9 +348,12 @@ async function saveSettings() {
 
 $('connectBtn').addEventListener('click', connect);
 $('disconnectBtn').addEventListener('click', disconnect);
-$('saveBtn').addEventListener('click', saveSettings);
+$('saveBtn').addEventListener('click', () => saveSettings(false));
+$('strengthInput').addEventListener('input', () => $('strengthValue').textContent = $('strengthInput').value);
+$('strengthInput').addEventListener('change', () => saveSettings(true));
+patternInputs.forEach(r => r.addEventListener('change', () => saveSettings(true)));
 cmdButtons.forEach(b => b.addEventListener('click', () => sendCommand(Number(b.dataset.cmd))));
-['angleInput', 'delayInput', 'repeatInput', 'effectInput'].forEach(id =>
+['angleInput', 'delayInput', 'repeatInput'].forEach(id =>
   $(id).addEventListener('input', () => showMessage('')));
 
 setConnectedUI(false);
