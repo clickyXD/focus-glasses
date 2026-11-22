@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Focus Glasses</title>
+<title>FOCAL</title>
 <style>
   :root {
     --bg: #3b3b38; --card: #ffffff; --text: #111111; --muted: #6e6e6a; --inset: #efefec;
@@ -35,6 +35,12 @@
   }
   .header-row { max-width: 520px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
   h1 { font-size: 20px; font-weight: 800; margin: 0; letter-spacing: -0.01em; }
+  h1.brand { font-size: 24px; font-weight: 900; letter-spacing: 0.1em; line-height: 1; display: flex; flex-direction: column; gap: 3px; }
+  .brand-sub { font-size: 9px; font-weight: 800; letter-spacing: 0.2em; text-transform: uppercase; color: var(--yellow); white-space: nowrap; }
+  header .header-row > div:first-child { min-width: 0; flex: 1; }
+  header .status-line { display: flex; flex-wrap: wrap; align-items: center; column-gap: 6px; row-gap: 2px; white-space: nowrap; }
+  header .status-line .batt { margin-left: 0; }
+  header button.small { padding: 8px 10px; }
   .version { font-size: 12px; color: var(--chrome-muted); }
   #connState { font-size: 13px; color: var(--chrome-muted); font-weight: 600; }
   #connState.on { color: var(--yellow); }
@@ -177,6 +183,9 @@
     border: 2px solid var(--border); background: transparent; color: var(--text);
   }
   .chip.selected { background: var(--yellow); border-color: var(--yellow); color: var(--on-yellow); }
+  .timer-ticks { position: relative; height: 16px; margin: 0 11px; font-size: 12px; font-weight: 600; color: var(--muted); }
+  .timer-ticks span { position: absolute; transform: translateX(-50%); white-space: nowrap; }
+  .timer-choice { font-size: 22px; font-weight: 800; font-variant-numeric: tabular-nums; }
   .custom-timer { display: flex; align-items: center; gap: 8px; margin-top: 10px; font-weight: 700; }
   .custom-timer[hidden] { display: none; }
   .custom-timer input { width: 80px; }
@@ -293,7 +302,7 @@
 <header>
   <div class="header-row">
     <div>
-      <h1>Focus Glasses</h1>
+      <h1 class="brand">FOCAL</h1>
       <div class="status-line">
         <span id="indicator" class="ind off" aria-hidden="true"></span>
         <span id="connState">Not connected</span>
@@ -319,7 +328,7 @@
   <!-- HOME -->
   <section id="screen-home" class="screen active">
     <div class="card">
-      <h2>Head angle</h2>
+      <h2>Session</h2>
       <svg id="dial" class="dial" viewBox="0 0 320 320" role="img" aria-label="Side view of head angle">
         <circle cx="160" cy="160" r="118" class="dial-ring"/>
         <path id="threshArc" class="dial-thresh"/>
@@ -354,31 +363,19 @@
         <span id="pitchValue">--°</span>
         <span id="stateValue">--</span>
       </div>
-    </div>
-
-    <div class="card">
-      <h2>Session</h2>
-      <div class="grid" style="margin-bottom:10px;">
+      <div class="grid" style="margin:14px 0 10px;">
         <div class="stat"><div class="label">Status</div><div class="value" id="sessionValue">--</div></div>
         <div class="stat"><div class="label">Session time</div><div class="value" id="elapsedValue">--</div></div>
         <div class="stat"><div class="label">Alerts</div><div class="value" id="alertsValue">--</div></div>
         <div class="stat"><div class="label">Head down (total)</div><div class="value" id="downTotalValue">--</div></div>
       </div>
       <div id="timerPicker" class="field" style="margin-bottom:12px;">
-        <label>Work timer</label>
-        <div class="chips">
-          <button class="chip" data-min="0">Off</button>
-          <button class="chip" data-min="25">25m</button>
-          <button class="chip" data-min="45">45m</button>
-          <button class="chip" data-min="60">1h</button>
-          <button class="chip" data-min="90">1h 30m</button>
-          <button class="chip" data-min="120">2h</button>
-          <button class="chip" data-min="custom">Custom</button>
+        <div class="row" style="align-items:baseline;">
+          <label for="timerSlider" style="margin:0;">Work timer</label>
+          <span id="timerChoiceText" class="timer-choice">Off</span>
         </div>
-        <div id="customTimer" class="custom-timer" hidden>
-          <input id="timerH" type="number" min="0" max="12" inputmode="numeric" value="0" aria-label="Hours"><span>h</span>
-          <input id="timerM" type="number" min="0" max="59" inputmode="numeric" value="30" aria-label="Minutes"><span>m</span>
-        </div>
+        <input id="timerSlider" type="range" min="0" max="0" step="1" value="0" aria-label="Work timer length">
+        <div class="timer-ticks" id="timerTicks" aria-hidden="true"></div>
         <div class="muted" style="margin-top:8px;">At the end, the glasses buzz 3 times, 3 rounds, and the session stops.</div>
       </div>
       <div id="breakBanner" class="banner" hidden>Time for a break. Get up and move for a minute.</div>
@@ -789,7 +786,7 @@
       </div>
       <div class="muted" style="margin-top:8px;">2 slow fading buzzes at 15%, then 3 more at 5%. The Home tab also shows a banner below 15%.</div>
     </div>
-    <div class="muted" style="text-align:center; margin-top:4px;">Focus Glasses app v0.20</div>
+    <div class="muted" style="text-align:center; margin-top:4px;">FOCAL focus coach smartglasses · app v0.22</div>
   </section>
 
   <!-- HISTORY -->
@@ -996,7 +993,7 @@ function useDevice(dev) {
   device = dev;
   device.removeEventListener('gattserverdisconnected', onDisconnected);
   device.addEventListener('gattserverdisconnected', onDisconnected);
-  saveJSON(KNOWN_KEY, { id: dev.id, name: dev.name || 'FocusGlasses' });
+  saveJSON(KNOWN_KEY, { id: dev.id, name: dev.name || 'FOCAL' });
 }
 
 // Opens the browser's device list. Used by Scan, and by Reconnect when the page was reopened.
@@ -1007,7 +1004,7 @@ async function chooseDevice() {
   }
   try {
     const dev = await navigator.bluetooth.requestDevice({
-      filters: [{ services: [SERVICE_UUID] }, { namePrefix: 'FocusGlasses' }],
+      filters: [{ services: [SERVICE_UUID] }, { namePrefix: 'FOCAL' }, { namePrefix: 'FocusGlasses' }],
       optionalServices: [SERVICE_UUID]
     });
     userDisconnected = false;
@@ -1115,7 +1112,7 @@ async function autoConnect() {
   }
   try {
     const devices = await navigator.bluetooth.getDevices();
-    const dev = devices.find(d => d.id === known.id) || devices.find(d => (d.name || '').startsWith('FocusGlasses'));
+    const dev = devices.find(d => d.id === known.id) || devices.find(d => /^(FOCAL|FocusGlasses)/.test(d.name || ''));
     if (!dev) { setConnState('off', 'Tap Reconnect'); return; }
     useDevice(dev);
     if (dev.watchAdvertisements) {
@@ -1254,28 +1251,47 @@ function updateBattery(pct, charging, usbPower) {
 }
 
 // ---------------- Work timer ----------------
-const TIMER_KEY = 'fg_timer_choice_v1';
-let timerChoice = loadJSON(TIMER_KEY, { preset: '0', h: 0, m: 30 });
+const TIMER_KEY = 'fg_timer_choice_v2';
+// Slider stops: fine steps for short timers, bigger steps for long ones
+const TIMER_STOPS = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 75, 90, 105, 120, 150, 180, 210, 240,
+                     300, 360, 420, 480, 540, 600, 660, 720];
+let timerMin = (() => {
+  const v2 = loadJSON(TIMER_KEY, null);
+  if (v2 && typeof v2.min === 'number') return v2.min;
+  const v1 = loadJSON('fg_timer_choice_v1', null);          // older app: chips + custom
+  if (!v1) return 0;
+  return v1.preset === 'custom' ? (v1.h * 60 + v1.m) : Number(v1.preset) || 0;
+})();
 let lastSessionOn = false;
 
-function selectTimerChip(preset) {
-  timerChoice.preset = preset;
-  document.querySelectorAll('#timerPicker .chip').forEach(c => c.classList.toggle('selected', c.dataset.min === preset));
-  $('customTimer').hidden = preset !== 'custom';
-  saveJSON(TIMER_KEY, timerChoice);
+function nearestStop(min) {
+  let best = 0;
+  TIMER_STOPS.forEach((v, i) => { if (Math.abs(v - min) < Math.abs(TIMER_STOPS[best] - min)) best = i; });
+  return best;
 }
+function renderTimerSlider() {
+  const sl = $('timerSlider');
+  sl.max = TIMER_STOPS.length - 1;
+  sl.value = nearestStop(timerMin);
+  $('timerChoiceText').textContent = timerMin ? fmtDuration(timerMin * 60000) : 'Off';
+  // Fill the track up to the thumb
+  sl.style.setProperty('--fill', (sl.value / sl.max * 100) + '%');
+}
+$('timerSlider').addEventListener('input', () => {
+  timerMin = TIMER_STOPS[Number($('timerSlider').value)];
+  saveJSON(TIMER_KEY, { min: timerMin });
+  renderTimerSlider();
+});
+renderTimerSlider();
+// Tick labels placed at their real slider positions
+[[0, 'Off'], [30, '30m'], [60, '1h'], [120, '2h'], [240, '4h'], [480, '8h'], [720, '12h']].forEach(([m, t]) => {
+  const sp = document.createElement('span');
+  sp.textContent = t;
+  sp.style.left = (TIMER_STOPS.indexOf(m) / (TIMER_STOPS.length - 1) * 100) + '%';
+  $('timerTicks').appendChild(sp);
+});
 
-function chosenTimerMinutes() {
-  if (timerChoice.preset !== 'custom') return Number(timerChoice.preset);
-  const h = Number($('timerH').value), m = Number($('timerM').value);
-  if (!Number.isInteger(h) || !Number.isInteger(m) || h < 0 || h > 12 || m < 0 || m > 59) {
-    throw new Error('Custom timer: hours 0–12 and minutes 0–59, whole numbers.');
-  }
-  const total = h * 60 + m;
-  if (total < 1 || total > 720) throw new Error('Custom timer must be between 1 minute and 12 hours.');
-  timerChoice.h = h; timerChoice.m = m; saveJSON(TIMER_KEY, timerChoice);
-  return total;
-}
+function chosenTimerMinutes() { return timerMin; }
 
 function fmtClock(sec) {
   const h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), s2 = sec % 60;
@@ -1380,7 +1396,7 @@ function showAlarmInputs() {
   $('alarmTime').value = String(Math.floor(alarmState.min / 60)).padStart(2, '0') + ':' + String(alarmState.min % 60).padStart(2, '0');
   document.querySelectorAll('.day-chip').forEach(c => c.classList.toggle('selected', (alarmState.days & (1 << Number(c.dataset.d))) !== 0));
 }
-function fmtClock(min) {
+function fmtTimeOfDay(min) {
   return new Date(2000, 0, 1, Math.floor(min / 60), min % 60).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
 }
 function daysText(m) {
@@ -1394,7 +1410,7 @@ function renderAlarmSummary() {
   const el = $('alarmSummary');
   if (connState !== 'on' || !moreSeen) { el.textContent = 'Connect the glasses to set the alarm.'; return; }
   if (!alarmState.on) { el.textContent = 'Alarm off.'; return; }
-  el.textContent = 'Rings at ' + fmtClock(alarmState.min) + ', ' + daysText(alarmState.days) + '.' +
+  el.textContent = 'Rings at ' + fmtTimeOfDay(alarmState.min) + ', ' + daysText(alarmState.days) + '.' +
                    (alarmState.synced ? '' : ' The glasses do not know the time yet.');
 }
 async function saveAlarm() {
@@ -1405,7 +1421,7 @@ async function saveAlarm() {
   await sendBytes([16, min & 0xFF, min >> 8, on ? 1 : 0, days]);
   alarmState = Object.assign({}, alarmState, { on, min, days });
   renderAlarmSummary();
-  showMessage(on ? 'Alarm set for ' + fmtClock(min) + ', ' + daysText(days) + '.' : 'Alarm off.');
+  showMessage(on ? 'Alarm set for ' + fmtTimeOfDay(min) + ', ' + daysText(days) + '.' : 'Alarm off.');
 }
 $('alarmToggle').addEventListener('change', saveAlarm);
 $('alarmTime').addEventListener('change', () => { $('alarmToggle').checked = true; saveAlarm(); });
@@ -2312,10 +2328,6 @@ function clearHistory() {
 $('mainBtn').addEventListener('click', mainButton);
 $('scanBtn').addEventListener('click', chooseDevice);
 $('sessionBtn').addEventListener('click', startOrStopSession);
-document.querySelectorAll('#timerPicker .chip').forEach(c => c.addEventListener('click', () => selectTimerChip(c.dataset.min)));
-$('timerH').value = timerChoice.h; $('timerM').value = timerChoice.m;
-selectTimerChip(timerChoice.preset);
-['timerH', 'timerM'].forEach(id => $(id).addEventListener('input', () => showMessage('')));
 $('saveBtn').addEventListener('click', () => saveSettings(false));
 $('strengthInput').addEventListener('input', () => $('strengthValue').textContent = $('strengthInput').value);
 $('strengthInput').addEventListener('change', () => saveSettings(true));
