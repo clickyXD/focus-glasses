@@ -2,19 +2,24 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Focus Glasses</title>
 <style>
   :root {
-    --bg: #f6f6f4; --card: #ffffff; --text: #1d1d1b; --muted: #6b6b66;
-    --border: #dcdcd6; --accent: #1d6fd1; --accent-text: #ffffff;
-    --good: #1f8a4c; --warn: #b26a00; --bad: #c0392b;
+    --bg: #3b3b38; --card: #ffffff; --text: #111111; --muted: #6e6e6a; --inset: #efefec;
+    --glow: 0 8px 20px -12px rgba(255, 214, 10, 0.75);
+    --border: #d6d6d2; --line: #111111;
+    --yellow: #ffd60a; --on-yellow: #111111;
+    --bar: #111111; --slider: #111111;
+    --chrome: #111111; --chrome-text: #ffffff; --chrome-muted: #9a9a96;
   }
   @media (prefers-color-scheme: dark) {
     :root {
-      --bg: #161615; --card: #222220; --text: #ececea; --muted: #a3a39d;
-      --border: #3a3a37; --accent: #4f95e8; --accent-text: #0b0b0a;
-      --good: #4cc27f; --warn: #e0a040; --bad: #e86b5c;
+      --bg: #000000; --card: #161616; --text: #f4f4f2; --muted: #9a9a96; --inset: #0d0d0d;
+      --glow: 0 8px 22px -14px rgba(255, 214, 10, 0.45);
+      --border: #2e2e2c; --line: #f4f4f2;
+      --bar: #f4f4f2; --slider: #ffd60a;
+      --chrome: #000000; --chrome-text: #ffffff; --chrome-muted: #8a8a86;
     }
   }
   * { box-sizing: border-box; }
@@ -22,158 +27,357 @@
     margin: 0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
     background: var(--bg); color: var(--text); font-size: 16px;
   }
-  main { max-width: 520px; margin: 0 auto; padding: 16px; }
-  h1 { font-size: 22px; font-weight: 600; margin: 4px 0 12px; }
-  h2 { font-size: 15px; font-weight: 600; margin: 0 0 10px; color: var(--muted); }
+
+  /* Header */
+  header {
+    position: sticky; top: 0; z-index: 5; background: var(--chrome); color: var(--chrome-text);
+    padding: 12px 16px; padding-top: calc(12px + env(safe-area-inset-top));
+  }
+  .header-row { max-width: 520px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  h1 { font-size: 20px; font-weight: 800; margin: 0; letter-spacing: -0.01em; }
+  .version { font-size: 12px; color: var(--chrome-muted); }
+  #connState { font-size: 13px; color: var(--chrome-muted); font-weight: 600; }
+  #connState.on { color: var(--yellow); }
+  .status-line { display: flex; align-items: center; gap: 6px; margin-top: 2px; }
+  .ind { width: 10px; height: 10px; border-radius: 50%; flex: none; background: #4a4a47; }
+  .ind.on { background: var(--yellow); box-shadow: 0 0 8px 2px rgba(255, 214, 10, 0.7); }
+  .ind.connecting { background: var(--yellow); }
+  @media (prefers-reduced-motion: no-preference) {
+    .ind.connecting { animation: blink 0.9s ease-in-out infinite; }
+  }
+  @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.2; } }
+  .batt { display: inline-flex; align-items: center; gap: 4px; margin-left: 6px; font-size: 13px; font-weight: 700; color: var(--chrome-text); }
+  .batt[hidden], .batt-bolt[hidden] { display: none; }
+  .batt-body { width: 22px; height: 11px; border: 2px solid var(--chrome-text); border-radius: 3px; padding: 1px; display: inline-block; }
+  .batt-fill { display: block; height: 100%; width: 0; background: var(--chrome-text); border-radius: 1px; }
+  .batt-tip { width: 2px; height: 5px; background: var(--chrome-text); border-radius: 0 1px 1px 0; margin-left: -4px; }
+  .batt-bolt { width: 9px; height: 13px; fill: var(--yellow); }
+  .batt.charging .batt-fill { background: var(--yellow); }
+  .batt.low .batt-body, .batt.low .batt-tip { border-color: var(--yellow); background-color: transparent; }
+  .batt.low .batt-tip { background: var(--yellow); }
+  .batt.low .batt-fill { background: var(--yellow); }
+  .batt.low #battText { color: var(--yellow); }
+  @media (prefers-reduced-motion: no-preference) {
+    .batt.low:not(.charging) .batt-body { animation: blink 1.4s ease-in-out infinite; }
+  }
+  header button { border-color: #3a3a38; background: transparent; color: var(--chrome-text); }
+  header button.primary { background: var(--yellow); color: var(--on-yellow); border-color: var(--yellow); }
+  #message { max-width: 520px; margin: 8px auto 0; font-size: 14px; color: var(--chrome-muted); }
+  #message:empty { display: none; }
+  #message.error {
+    background: var(--yellow); color: var(--on-yellow); font-weight: 600;
+    padding: 8px 10px; border-radius: 8px;
+  }
+
+  /* Layout */
+  main { max-width: 520px; margin: 0 auto; padding: 14px 16px calc(84px + env(safe-area-inset-bottom)); }
+  .screen { display: none; }
+  .screen.active { display: block; }
+  h2 {
+    font-size: 12px; font-weight: 700; margin: 0 0 12px; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.08em;
+  }
   .card {
     background: var(--card); border: 1px solid var(--border); border-radius: 12px;
-    padding: 14px; margin-bottom: 12px;
+    padding: 16px; margin-bottom: 16px; box-shadow: var(--glow);
   }
   .row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-  #connState { font-size: 14px; color: var(--muted); }
-  #connState.on { color: var(--good); }
+
+  /* Buttons */
   button {
-    font: inherit; border-radius: 8px; border: 1px solid var(--border);
-    background: var(--card); color: var(--text); padding: 12px 10px; cursor: pointer;
+    font: inherit; font-weight: 600; border-radius: 10px; border: 2px solid var(--line);
+    background: transparent; color: var(--text); padding: 12px 10px; cursor: pointer;
   }
-  button.primary { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
-  button:disabled { opacity: 0.45; cursor: default; }
+  button.primary { background: var(--yellow); color: var(--on-yellow); border-color: var(--yellow); font-weight: 800; }
+  button.danger { border-color: var(--border); color: var(--muted); }
+  button.small { padding: 8px 12px; font-size: 14px; }
+  button:disabled { opacity: 0.35; cursor: default; }
+
+  /* Stats */
   .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  .stat { border: 1px solid var(--border); border-radius: 8px; padding: 10px; }
-  .stat .label { font-size: 13px; color: var(--muted); }
-  .stat .value { font-size: 22px; font-weight: 600; margin-top: 2px; }
-  #pitchValue { font-size: 40px; font-weight: 600; }
-  #pitchBarWrap { height: 10px; background: var(--border); border-radius: 5px; margin-top: 8px; position: relative; overflow: hidden; }
-  #pitchBar { position: absolute; top: 0; bottom: 0; left: 50%; width: 0; background: var(--accent); }
-  #thresholdMark { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--bad); }
-  .down { color: var(--bad); }
-  label { display: block; font-size: 14px; color: var(--muted); margin-bottom: 4px; }
-  input {
-    width: 100%; font: inherit; padding: 10px; border-radius: 8px;
-    border: 1px solid var(--border); background: var(--bg); color: var(--text);
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+  .stat { background: var(--inset); border-radius: 10px; padding: 10px 12px; }
+  .stat .label {
+    font-size: 11px; color: var(--muted); font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.06em;
   }
-  .field { margin-bottom: 10px; }
-  #message { font-size: 14px; color: var(--muted); min-height: 20px; margin-top: 8px; }
-  input[type=range] {
-    padding: 0; border: none; background: transparent; height: 32px;
-    accent-color: var(--accent); cursor: pointer;
+  .stat .value { font-size: 24px; font-weight: 800; margin-top: 2px; letter-spacing: -0.01em; }
+
+  /* Head angle */
+  #pitchValue { font-size: 56px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.1; }
+  #stateValue { font-weight: 700; font-size: 14px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+  .angle-readout { display: flex; align-items: center; justify-content: center; gap: 14px; margin-top: 2px; }
+  .dial { display: block; width: 100%; max-width: 320px; margin: 0 auto; }
+  .dial-ring { fill: none; stroke: var(--border); stroke-width: 2; }
+  .dial-thresh { fill: none; stroke: var(--yellow); stroke-width: 12; opacity: 0.35; transition: opacity 0.3s; }
+  .dial-thresh.active { opacity: 1; }
+  .tick { stroke: var(--muted); stroke-width: 1.5; }
+  .tick.major { stroke: var(--text); stroke-width: 2.5; }
+  .tick.back { opacity: 0.3; }
+  .tick-label { fill: var(--muted); font-size: 12px; font-weight: 700; font-family: inherit; }
+  .dial-head { transform-box: view-box; transform-origin: 160px 160px; transition: transform 0.45s ease-out; }
+  @media (prefers-reduced-motion: reduce) { .dial-head { transition: none; } }
+  .head-line { fill: var(--card); stroke: var(--text); stroke-width: 4.5; stroke-linejoin: round; stroke-linecap: round; }
+  .head-detail { fill: none; stroke: var(--text); stroke-width: 3.5; stroke-linecap: round; }
+  .head-eye { fill: var(--text); }
+  .glasses { fill: none; stroke: var(--yellow); stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; }
+  .motor { fill: var(--yellow); stroke: var(--text); stroke-width: 2; }
+  .dial-ray-under { stroke: var(--text); stroke-width: 7; stroke-linecap: round; }
+  .dial-ray { stroke: var(--yellow); stroke-width: 4; stroke-linecap: round; }
+  .dial-tip { fill: var(--yellow); stroke: var(--text); stroke-width: 2.5; }
+  .down { background: var(--yellow); color: var(--on-yellow) !important; border-radius: 8px; padding: 0 8px; }
+
+  .muted { color: var(--muted); font-size: 13px; }
+
+  /* Forms */
+  label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 6px; font-weight: 600; }
+  input[type=number] {
+    width: 100%; font: inherit; font-weight: 600; padding: 11px 12px; border-radius: 10px;
+    border: 2px solid var(--border); background: var(--inset); color: var(--text);
   }
-  .ticks { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); padding: 0 7px; }
+  input[type=number]:focus { outline: none; border-color: var(--line); }
+  input[type=range] { width: 100%; height: 32px; accent-color: var(--slider); cursor: pointer; margin: 0; }
+  .field { margin-bottom: 14px; }
+  .ticks { display: flex; justify-content: space-between; font-size: 12px; font-weight: 600; color: var(--muted); padding: 0 7px; }
   .patterns { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
   label.pattern { position: relative; margin: 0; color: var(--text); font-size: 15px; }
   .pattern input { position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none; }
   .pattern span {
-    display: block; text-align: center; padding: 12px 6px; cursor: pointer;
-    border: 1px solid var(--border); border-radius: 8px; background: var(--card);
+    display: block; text-align: center; padding: 12px 6px; cursor: pointer; font-weight: 700;
+    border: 2px solid var(--border); border-radius: 10px;
   }
-  .pattern input:checked + span { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
-  .pattern input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; }
-  .pattern input:disabled + span { opacity: 0.45; cursor: default; }
-  .hint { font-size: 13px; color: var(--muted); margin: -2px 0 12px; }
-  #message.error { color: var(--bad); }
+  .pattern input:checked + span { background: var(--yellow); color: var(--on-yellow); border-color: var(--yellow); }
+  .pattern input:focus-visible + span { outline: 2px solid var(--line); outline-offset: 2px; }
+  .pattern input:disabled + span { opacity: 0.35; cursor: default; }
+
+  /* History list */
+  .session-item { border-top: 1px solid var(--border); padding: 12px 0; }
+  .session-item:first-child { border-top: none; padding-top: 0; }
+  .session-head { display: flex; justify-content: space-between; font-weight: 700; font-size: 15px; }
+  .session-meta { font-size: 13px; color: var(--muted); margin-top: 3px; }
+  .tag {
+    font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em;
+    background: var(--yellow); color: var(--on-yellow); border-radius: 4px; padding: 2px 5px; margin-left: 6px;
+  }
+
+  /* Tab bar */
+  nav.tabbar {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 5;
+    background: var(--chrome); display: flex; justify-content: center;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .tabs { display: grid; grid-template-columns: repeat(3, 1fr); width: 100%; max-width: 520px; }
+  .tab {
+    border: none; border-radius: 0; background: transparent; color: var(--chrome-muted);
+    padding: 15px 4px; font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em;
+    border-top: 3px solid transparent;
+  }
+  .tab.active { color: var(--yellow); border-top-color: var(--yellow); }
 </style>
 </head>
 <body>
+
+<header>
+  <div class="header-row">
+    <div>
+      <h1>Focus Glasses</h1>
+      <div class="status-line">
+        <span id="indicator" class="ind off" aria-hidden="true"></span>
+        <span id="connState">Not connected</span>
+        <span id="batt" class="batt" hidden>
+          <span class="batt-body"><span id="battFill" class="batt-fill"></span></span><span class="batt-tip"></span>
+          <svg id="battBolt" class="batt-bolt" viewBox="0 0 10 14" aria-hidden="true" hidden><path d="M6 0 L0 8 H4 L3 14 L10 5 H6 Z"/></svg>
+          <span id="battText"></span>
+        </span>
+      </div>
+    </div>
+    <div style="display:flex; gap:8px;">
+      <button id="scanBtn" class="small">Scan</button>
+      <button id="mainBtn" class="primary small">Connect</button>
+    </div>
+  </div>
+  <div id="message"></div>
+</header>
+
 <main>
-  <h1>Focus Glasses <span style="font-size:13px; font-weight:400; color:var(--muted);">app v0.3.1</span></h1>
-
-  <div class="card">
-    <div class="row">
-      <span id="connState">Not connected</span>
-      <div style="display:flex; gap:8px;">
-        <button id="connectBtn" class="primary">Connect</button>
-        <button id="disconnectBtn" disabled>Disconnect</button>
+  <!-- HOME -->
+  <section id="screen-home" class="screen active">
+    <div class="card">
+      <h2>Head angle</h2>
+      <svg id="dial" class="dial" viewBox="0 0 320 320" role="img" aria-label="Side view of head angle">
+        <circle cx="160" cy="160" r="118" class="dial-ring"/>
+        <path id="threshArc" class="dial-thresh"/>
+        <g id="ticks"></g>
+        <g id="headGroup" class="dial-head">
+          <!-- Drawn facing right, then mirrored to face left -->
+          <g transform="translate(320 0) scale(-1 1)">
+            <line x1="212" y1="160" x2="270" y2="160" class="dial-ray-under"/>
+            <line x1="212" y1="160" x2="270" y2="160" class="dial-ray"/>
+            <circle cx="274" cy="160" r="7" class="dial-tip"/>
+            <g transform="translate(-4 14)">
+              <path class="head-line" d="M128 214 L130 192
+                C112 182 104 162 108 142
+                C113 116 136 102 160 104
+                C184 106 198 124 198 144
+                C198 150 206 160 207 166
+                C207 170 202 171 199 171
+                C201 176 199 182 196 184
+                C197 190 192 196 184 196
+                L176 196 L176 214"/>
+              <path class="head-detail" d="M150 140 C158 141 160 152 154 158"/>
+              <circle cx="186" cy="146" r="3.5" class="head-eye"/>
+              <!-- Glasses: lens, arm, and the motor behind the ear -->
+              <line x1="205" y1="136" x2="205" y2="154" class="glasses"/>
+              <path class="glasses" d="M205 138 L160 138 C150 138 146 144 145 152"/>
+              <circle cx="144" cy="156" r="5" class="motor"/>
+            </g>
+          </g>
+        </g>
+      </svg>
+      <div class="angle-readout">
+        <span id="pitchValue">--°</span>
+        <span id="stateValue">--</span>
       </div>
     </div>
-    <div id="message"></div>
-  </div>
 
-  <div class="card">
-    <h2>Head angle</h2>
-    <div class="row">
-      <span id="pitchValue">--°</span>
-      <span id="stateValue">--</span>
+    <div class="card">
+      <h2>Session</h2>
+      <div class="grid" style="margin-bottom:10px;">
+        <div class="stat"><div class="label">Status</div><div class="value" id="sessionValue">--</div></div>
+        <div class="stat"><div class="label">Session time</div><div class="value" id="elapsedValue">--</div></div>
+        <div class="stat"><div class="label">Alerts</div><div class="value" id="alertsValue">--</div></div>
+        <div class="stat"><div class="label">Head down (total)</div><div class="value" id="downTotalValue">--</div></div>
+      </div>
+      <button id="sessionBtn" class="primary" style="width:100%;" disabled>Start session</button>
     </div>
-    <div id="pitchBarWrap"><div id="pitchBar"></div><div id="thresholdMark"></div></div>
-  </div>
 
-  <div class="card">
-    <h2>Status</h2>
-    <div class="grid">
-      <div class="stat"><div class="label">Session</div><div class="value" id="sessionValue">--</div></div>
-      <div class="stat"><div class="label">Head down for</div><div class="value" id="downValue">--</div></div>
-      <div class="stat"><div class="label">Alerts</div><div class="value" id="alertsValue">--</div></div>
-      <div class="stat"><div class="label">Battery</div><div class="value" id="batteryValue">--</div></div>
+    <div class="card">
+      <h2>Quick controls</h2>
+      <div class="grid3">
+        <button class="cmd" data-cmd="5">Snooze</button>
+        <button class="cmd" data-cmd="3">Calibrate</button>
+        <button class="cmd" data-cmd="4">Test buzz</button>
+      </div>
+      <div class="muted" style="margin-top:8px;">Snooze pauses alerts for 10 minutes. Calibrate: wear the glasses, look straight ahead, then tap.</div>
     </div>
-  </div>
 
-  <div class="card">
-    <h2>Controls</h2>
-    <div class="grid">
-      <button class="primary cmd" data-cmd="1">Start session</button>
-      <button class="cmd" data-cmd="2">Stop session</button>
-      <button class="cmd" data-cmd="3">Calibrate</button>
-      <button class="cmd" data-cmd="5">Snooze 10 min</button>
-      <button class="cmd" data-cmd="4" style="grid-column: span 2;">Test buzz</button>
-    </div>
-    <div style="font-size:13px; color:var(--muted); margin-top:8px;">
-      Calibrate: wear the glasses, look straight ahead, then tap.
-    </div>
-  </div>
-
-  <div class="card">
-    <h2>Settings</h2>
-    <div class="field">
-      <label for="angleInput">Head-down angle (degrees, 5–80)</label>
-      <input id="angleInput" type="number" min="5" max="80" inputmode="numeric">
-    </div>
-    <div class="field">
-      <label for="delayInput">Delay before first alert (seconds, 1–3600)</label>
-      <input id="delayInput" type="number" min="1" max="3600" inputmode="numeric">
-    </div>
-    <div class="field">
-      <label for="repeatInput">Repeat alert every (seconds, 5–3600)</label>
-      <input id="repeatInput" type="number" min="5" max="3600" inputmode="numeric">
-    </div>
-    <div class="field">
-      <label for="strengthInput">Buzz strength: <span id="strengthValue">10</span> of 10</label>
-      <input id="strengthInput" type="range" min="1" max="10" step="1" value="10" list="strengthTicks">
-      <datalist id="strengthTicks">
-        <option value="1"></option><option value="2"></option><option value="3"></option>
-        <option value="4"></option><option value="5"></option><option value="6"></option>
-        <option value="7"></option><option value="8"></option><option value="9"></option>
-        <option value="10"></option>
-      </datalist>
-      <div class="ticks"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span></div>
-    </div>
-    <div class="field">
-      <label>Alert pattern</label>
-      <div class="patterns" role="radiogroup" aria-label="Alert pattern">
-        <label class="pattern"><input type="radio" name="pattern" value="0" checked><span>1 long</span></label>
-        <label class="pattern"><input type="radio" name="pattern" value="1"><span>3 short</span></label>
-        <label class="pattern"><input type="radio" name="pattern" value="2"><span>2 medium</span></label>
+    <div class="card">
+      <div class="row">
+        <span class="muted">Head down right now</span>
+        <span id="downValue" style="font-weight:600;">--</span>
       </div>
     </div>
-    <div class="hint">Changing strength or pattern saves it and plays a test buzz.</div>
-    <button id="saveBtn" class="primary" style="width:100%;">Save settings</button>
-  </div>
+  </section>
+
+  <!-- SETTINGS -->
+  <section id="screen-settings" class="screen">
+    <div class="card">
+      <h2>Alert timing</h2>
+      <div class="field">
+        <label for="angleInput">Head-down angle (degrees, 5–80)</label>
+        <input id="angleInput" type="number" min="5" max="80" inputmode="numeric">
+      </div>
+      <div class="field">
+        <label for="delayInput">Delay before first alert (seconds, 1–3600)</label>
+        <input id="delayInput" type="number" min="1" max="3600" inputmode="numeric">
+      </div>
+      <div class="field">
+        <label for="repeatInput">Repeat alert every (seconds, 5–3600)</label>
+        <input id="repeatInput" type="number" min="5" max="3600" inputmode="numeric">
+      </div>
+      <button id="saveBtn" class="primary" style="width:100%;" disabled>Save timing</button>
+    </div>
+
+    <div class="card">
+      <h2>Buzz</h2>
+      <div class="field">
+        <label for="strengthInput">Strength: <span id="strengthValue">10</span> of 10</label>
+        <input id="strengthInput" type="range" min="1" max="10" step="1" value="10" list="strengthTicks" disabled>
+        <datalist id="strengthTicks">
+          <option value="1"></option><option value="2"></option><option value="3"></option>
+          <option value="4"></option><option value="5"></option><option value="6"></option>
+          <option value="7"></option><option value="8"></option><option value="9"></option>
+          <option value="10"></option>
+        </datalist>
+        <div class="ticks"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span></div>
+      </div>
+      <div class="field" style="margin-bottom:6px;">
+        <label>Pattern</label>
+        <div class="patterns" role="radiogroup" aria-label="Alert pattern">
+          <label class="pattern"><input type="radio" name="pattern" value="0" checked disabled><span>1 long</span></label>
+          <label class="pattern"><input type="radio" name="pattern" value="1" disabled><span>3 short</span></label>
+          <label class="pattern"><input type="radio" name="pattern" value="2" disabled><span>2 medium</span></label>
+        </div>
+      </div>
+      <div class="muted">Changing strength or pattern saves it and plays a test buzz.</div>
+    </div>
+    <div class="muted" style="text-align:center; margin-top:4px;">Focus Glasses app v0.6.1</div>
+  </section>
+
+  <!-- HISTORY -->
+  <section id="screen-history" class="screen">
+    <div class="card">
+      <h2>Today</h2>
+      <div class="grid">
+        <div class="stat"><div class="label">Sessions</div><div class="value" id="todaySessions">0</div></div>
+        <div class="stat"><div class="label">Focus time</div><div class="value" id="todayTime">0m</div></div>
+        <div class="stat"><div class="label">Alerts</div><div class="value" id="todayAlerts">0</div></div>
+        <div class="stat"><div class="label">Head down</div><div class="value" id="todayDown">0%</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Last 7 days</h2>
+      <div class="grid">
+        <div class="stat"><div class="label">Sessions</div><div class="value" id="weekSessions">0</div></div>
+        <div class="stat"><div class="label">Focus time</div><div class="value" id="weekTime">0m</div></div>
+        <div class="stat"><div class="label">Alerts</div><div class="value" id="weekAlerts">0</div></div>
+        <div class="stat"><div class="label">Head down</div><div class="value" id="weekDown">0%</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Sessions</h2>
+      <div id="sessionList"><div class="muted">No sessions yet. Start one from the Home tab.</div></div>
+    </div>
+
+    <div class="grid">
+      <button id="exportBtn">Export CSV</button>
+      <button id="clearBtn" class="danger">Clear history</button>
+    </div>
+    <div class="muted" style="margin-top:8px;">
+      History is stored in this browser on this phone. Sessions are only recorded while the app is open and connected.
+    </div>
+  </section>
 </main>
 
+<nav class="tabbar">
+  <div class="tabs">
+    <button class="tab active" data-screen="home">Home</button>
+    <button class="tab" data-screen="settings">Settings</button>
+    <button class="tab" data-screen="history">History</button>
+  </div>
+</nav>
+
 <script>
+// ---------------- Bluetooth protocol (matches firmware v0.4) ----------------
 const SERVICE_UUID  = 'a3c40001-6f2b-4d8e-9c1a-5b7e2f9d3a10';
 const CONTROL_UUID  = 'a3c40002-6f2b-4d8e-9c1a-5b7e2f9d3a10';
 const SETTINGS_UUID = 'a3c40003-6f2b-4d8e-9c1a-5b7e2f9d3a10';
 const STATUS_UUID   = 'a3c40004-6f2b-4d8e-9c1a-5b7e2f9d3a10';
 
-let device = null;
-let controlChar = null;
-let settingsChar = null;
-let statusChar = null;
+const HISTORY_KEY = 'fg_history_v1';
+const ACTIVE_KEY  = 'fg_active_session_v1';
+const MAX_SESSIONS = 500;
+
+let device = null, controlChar = null, settingsChar = null, statusChar = null;
 let currentAngle = 25;
+let sessionOn = false;
 
 const $ = (id) => document.getElementById(id);
 const cmdButtons = Array.from(document.querySelectorAll('.cmd'));
 const patternInputs = Array.from(document.querySelectorAll('input[name="pattern"]'));
+const PATTERN_NAMES = ['1 long', '3 short', '2 medium'];
 
 // Bluetooth allows one operation at a time; run them in order
 let bleQueue = Promise.resolve();
@@ -183,70 +387,266 @@ function queued(fn) {
   return p;
 }
 
+// ---------------- Helpers ----------------
 function showMessage(text, isError) {
   $('message').textContent = text || '';
   $('message').className = isError ? 'error' : '';
 }
 
-function setConnectedUI(connected) {
-  $('connState').textContent = connected ? 'Connected' : 'Not connected';
-  $('connState').className = connected ? 'on' : '';
-  $('connectBtn').disabled = connected;
-  $('disconnectBtn').disabled = !connected;
-  $('saveBtn').disabled = !connected;
-  cmdButtons.forEach(b => b.disabled = !connected);
-  $('strengthInput').disabled = !connected;
-  patternInputs.forEach(r => r.disabled = !connected);
-  if (!connected) {
-    ['sessionValue', 'downValue', 'alertsValue', 'batteryValue', 'stateValue'].forEach(id => $(id).textContent = '--');
-    $('pitchValue').textContent = '--°';
-    $('pitchBar').style.width = '0';
+function loadJSON(key, fallback) {
+  try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; }
+  catch (e) { return fallback; }
+}
+function saveJSON(key, value) {
+  try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) {}
+}
+
+function fmtDuration(ms) {
+  const sec = Math.round(ms / 1000);
+  if (sec < 60) return sec + 's';
+  const totalMin = Math.round(ms / 60000);
+  const h = Math.floor(totalMin / 60), m = totalMin % 60;
+  return h > 0 ? h + 'h ' + m + 'm' : m + 'm';
+}
+function fmtSeconds(s) {
+  const m = Math.floor(s / 60), r = s % 60;
+  return m > 0 ? m + 'm ' + r + 's' : r + 's';
+}
+function pct(part, whole) {
+  return whole > 0 ? Math.round(part / whole * 100) + '%' : '0%';
+}
+
+// ---------------- Tabs ----------------
+document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => {
+  document.querySelectorAll('.tab').forEach(x => x.classList.toggle('active', x === t));
+  document.querySelectorAll('.screen').forEach(s =>
+    s.classList.toggle('active', s.id === 'screen-' + t.dataset.screen));
+  if (t.dataset.screen === 'history') renderHistory();
+  window.scrollTo(0, 0);
+}));
+
+// ---------------- Connection ----------------
+// Remembers the last glasses used. While the app is open it reconnects automatically
+// whenever the connection drops. On opening, it connects automatically only where the
+// browser allows it (getDevices); otherwise one tap on Reconnect is needed.
+const KNOWN_KEY = 'fg_known_device_v1';
+const RETRY_DELAYS = [1000, 2000, 4000, 8000];  // then every 10 s
+let connState = 'off';          // 'off' | 'connecting' | 'on'
+let userDisconnected = false;
+let reconnectTimer = null;
+let reconnectAttempt = 0;
+let connectInProgress = false;
+
+function setConnState(state, text) {
+  connState = state;
+  $('indicator').className = 'ind ' + state;
+  $('connState').textContent = text;
+  $('connState').className = state === 'on' ? 'on' : '';
+  const known = loadJSON(KNOWN_KEY, null);
+  if (state === 'on') {
+    $('mainBtn').textContent = 'Disconnect';
+    $('mainBtn').className = 'small';
+  } else if (state === 'connecting') {
+    $('mainBtn').textContent = 'Stop';
+    $('mainBtn').className = 'small';
+  } else {
+    $('mainBtn').textContent = (device || known) ? 'Reconnect' : 'Connect';
+    $('mainBtn').className = 'primary small';
   }
 }
 
-async function connect() {
+function setConnectedUI(connected) {
+  $('saveBtn').disabled = !connected;
+  $('sessionBtn').disabled = !connected;
+  $('strengthInput').disabled = !connected;
+  patternInputs.forEach(r => r.disabled = !connected);
+  cmdButtons.forEach(b => b.disabled = !connected);
+  if (!connected) {
+    ['sessionValue', 'alertsValue', 'stateValue', 'downValue'].forEach(id => $(id).textContent = '--');
+    $('batt').hidden = true;
+    $('pitchValue').textContent = '--°';
+    $('pitchValue').className = '';
+    $('stateValue').className = '';
+    $('headGroup').style.transform = 'rotate(0deg)';
+    $('threshArc').classList.remove('active');
+  }
+}
+
+function useDevice(dev) {
+  if (device && device !== dev) {
+    device.removeEventListener('gattserverdisconnected', onDisconnected);
+    if (device.gatt.connected) device.gatt.disconnect();
+  }
+  device = dev;
+  device.removeEventListener('gattserverdisconnected', onDisconnected);
+  device.addEventListener('gattserverdisconnected', onDisconnected);
+  saveJSON(KNOWN_KEY, { id: dev.id, name: dev.name || 'FocusGlasses' });
+}
+
+// Opens the browser's device list. Used by Scan, and by Reconnect when the page was reopened.
+async function chooseDevice() {
   if (!navigator.bluetooth) {
     showMessage('Bluetooth is not available in this browser. Use Chrome on Android or Windows, or the Bluefy browser on iPhone.', true);
     return;
   }
   try {
-    showMessage('Choose FocusGlasses from the list...');
-    device = await navigator.bluetooth.requestDevice({
+    const dev = await navigator.bluetooth.requestDevice({
       filters: [{ services: [SERVICE_UUID] }, { namePrefix: 'FocusGlasses' }],
       optionalServices: [SERVICE_UUID]
     });
-    device.addEventListener('gattserverdisconnected', onDisconnected);
+    userDisconnected = false;
+    cancelReconnect();
+    useDevice(dev);
     await connectGatt();
   } catch (err) {
-    showMessage('Connection failed: ' + err.message, true);
+    if (err.name !== 'NotFoundError') showMessage('Connection failed: ' + err.message, true);  // NotFoundError = list closed
+    if (connState !== 'on') setConnState('off', 'Not connected');
   }
 }
 
 async function connectGatt() {
-  showMessage('Connecting...');
-  const server = await device.gatt.connect();
-  const service = await server.getPrimaryService(SERVICE_UUID);
-  controlChar  = await service.getCharacteristic(CONTROL_UUID);
-  settingsChar = await service.getCharacteristic(SETTINGS_UUID);
-  statusChar   = await service.getCharacteristic(STATUS_UUID);
+  if (!device || connectInProgress) return;
+  connectInProgress = true;
+  setConnState('connecting', reconnectAttempt > 0 ? 'Reconnecting…' : 'Connecting…');
+  try {
+    const server = await device.gatt.connect();
+    const service = await server.getPrimaryService(SERVICE_UUID);
+    controlChar  = await service.getCharacteristic(CONTROL_UUID);
+    settingsChar = await service.getCharacteristic(SETTINGS_UUID);
+    statusChar   = await service.getCharacteristic(STATUS_UUID);
+    statusChar.addEventListener('characteristicvaluechanged', (e) => parseStatus(e.target.value));
+    await statusChar.startNotifications();
 
-  statusChar.addEventListener('characteristicvaluechanged', (e) => parseStatus(e.target.value));
-  await statusChar.startNotifications();
-
-  await readSettings();
-  setConnectedUI(true);
-  showMessage('');
+    reconnectAttempt = 0;
+    setConnectedUI(true);
+    setConnState('on', 'Connected');
+    const ok = await readSettings();
+    if (ok) showMessage('');
+  } catch (err) {
+    connectInProgress = false;
+    if (userDisconnected) { setConnState('off', 'Not connected'); return; }
+    scheduleReconnect();
+    return;
+  }
+  connectInProgress = false;
 }
 
 function onDisconnected() {
   setConnectedUI(false);
-  showMessage('Disconnected. Tap Connect to reconnect.', true);
+  sessionTrackerDisconnected();
+  if (userDisconnected) {
+    setConnState('off', 'Not connected');
+  } else {
+    scheduleReconnect();
+  }
 }
 
-async function disconnect() {
-  if (device && device.gatt.connected) device.gatt.disconnect();
+function scheduleReconnect() {
+  cancelReconnect();
+  if (!device || userDisconnected) return;
+  const delay = RETRY_DELAYS[reconnectAttempt] || 10000;
+  reconnectAttempt++;
+  setConnState('connecting', 'Searching for glasses…');
+  reconnectTimer = setTimeout(() => { reconnectTimer = null; connectGatt(); }, delay);
 }
 
+function cancelReconnect() {
+  if (reconnectTimer) { clearTimeout(reconnectTimer); reconnectTimer = null; }
+}
+
+function mainButton() {
+  if (connState === 'on' || connState === 'connecting') {
+    userDisconnected = true;
+    cancelReconnect();
+    if (device && device.gatt.connected) device.gatt.disconnect();
+    setConnectedUI(false);
+    setConnState('off', 'Not connected');
+    return;
+  }
+  userDisconnected = false;
+  reconnectAttempt = 0;
+  if (device) connectGatt();   // same page visit: reconnect without the device list
+  else chooseDevice();          // new page visit: browser requires the device list
+}
+
+// On opening: connect to the remembered glasses if the browser allows it
+async function autoConnect() {
+  const known = loadJSON(KNOWN_KEY, null);
+  if (!known || !navigator.bluetooth || !navigator.bluetooth.getDevices) {
+    setConnState('off', known ? 'Tap Reconnect' : 'Not connected');
+    return;
+  }
+  try {
+    const devices = await navigator.bluetooth.getDevices();
+    const dev = devices.find(d => d.id === known.id) || devices.find(d => (d.name || '').startsWith('FocusGlasses'));
+    if (!dev) { setConnState('off', 'Tap Reconnect'); return; }
+    useDevice(dev);
+    if (dev.watchAdvertisements) {
+      // Connect as soon as the glasses are seen nearby
+      setConnState('connecting', 'Searching for glasses…');
+      dev.addEventListener('advertisementreceived', () => {
+        if (connState !== 'on') connectGatt();
+      });
+      try { await dev.watchAdvertisements(); } catch (e) { connectGatt(); }
+    } else {
+      connectGatt();
+    }
+  } catch (err) {
+    setConnState('off', 'Tap Reconnect');
+  }
+}
+
+// When the app comes back to the screen, retry right away instead of waiting
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && device && connState !== 'on' && !userDisconnected) {
+    reconnectAttempt = 0;
+    cancelReconnect();
+    connectGatt();
+  }
+});
+
+// ---------------- Dial ----------------
+const DIAL_C = 160, DIAL_R = 118;
+function polar(r, deg) {
+  const a = deg * Math.PI / 180;
+  return [DIAL_C - r * Math.cos(a), DIAL_C + r * Math.sin(a)];   // mirrored: straight ahead points left
+}
+
+function drawTicks() {
+  const NS = 'http://www.w3.org/2000/svg';
+  const g = $('ticks');
+  g.innerHTML = '';
+  for (let a = 0; a < 360; a += 10) {
+    const deg = a > 180 ? a - 360 : a;                  // -170..180, 0 = straight ahead
+    const major = deg % 30 === 0;
+    const [x1, y1] = polar(DIAL_R - (major ? 14 : 8), deg);
+    const [x2, y2] = polar(DIAL_R, deg);
+    const line = document.createElementNS(NS, 'line');
+    line.setAttribute('x1', x1); line.setAttribute('y1', y1);
+    line.setAttribute('x2', x2); line.setAttribute('y2', y2);
+    line.setAttribute('class', 'tick' + (major ? ' major' : '') + (Math.abs(deg) > 90 ? ' back' : ''));
+    g.appendChild(line);
+    if (major && Math.abs(deg) <= 90) {
+      const [tx, ty] = polar(DIAL_R + 20, deg);
+      const t = document.createElementNS(NS, 'text');
+      t.setAttribute('x', tx); t.setAttribute('y', ty);
+      t.setAttribute('text-anchor', 'middle'); t.setAttribute('dominant-baseline', 'central');
+      t.setAttribute('class', 'tick-label');
+      t.textContent = (deg < 0 ? '\u2212' : '') + Math.abs(deg) + '\u00b0';
+      g.appendChild(t);
+    }
+  }
+}
+
+// Yellow band from the head-down threshold to straight down (90°)
+function drawThreshold() {
+  const r = DIAL_R - 6;
+  const [x1, y1] = polar(r, currentAngle);
+  const [x2, y2] = polar(r, 90);
+  $('threshArc').setAttribute('d', 'M ' + x1 + ' ' + y1 + ' A ' + r + ' ' + r + ' 0 0 0 ' + x2 + ' ' + y2);
+}
+
+// ---------------- Status ----------------
 function parseStatus(view) {
   if (view.byteLength < 8) return;
   const flags   = view.getUint8(0);
@@ -258,31 +658,43 @@ function parseStatus(view) {
   const session = (flags & 1) !== 0;
   const isDown  = (flags & 2) !== 0;
   const snoozed = (flags & 4) !== 0;
+  const charging = (flags & 8) !== 0;
+  const usbPower = (flags & 16) !== 0;
 
   $('pitchValue').textContent = pitch.toFixed(1) + '°';
   $('pitchValue').className = isDown ? 'down' : '';
   $('stateValue').textContent = isDown ? 'Head down' : 'Level';
   $('stateValue').className = isDown ? 'down' : '';
 
-  // Bar: center = 0°, right edge = +90° (down), left edge = -90° (up)
+  // Dial: tilt the head by the measured angle (head faces left, so looking down = counterclockwise)
   const clamped = Math.max(-90, Math.min(90, pitch));
-  const pct = Math.abs(clamped) / 90 * 50;
-  $('pitchBar').style.width = pct + '%';
-  $('pitchBar').style.left = clamped >= 0 ? '50%' : (50 - pct) + '%';
-  $('thresholdMark').style.left = (50 + currentAngle / 90 * 50) + '%';
+  $('headGroup').style.transform = 'rotate(' + (-clamped) + 'deg)';
+  $('threshArc').classList.toggle('active', isDown);
 
+  sessionOn = session;
   $('sessionValue').textContent = snoozed ? 'Snoozed' : (session ? 'On' : 'Off');
-  $('downValue').textContent = isDown ? formatSeconds(downSec) : '--';
-  $('alertsValue').textContent = alerts;
-  $('batteryValue').textContent = battery + '%';
+  $('sessionBtn').textContent = session ? 'Stop session' : 'Start session';
+  $('sessionBtn').className = session ? '' : 'primary';
+  $('downValue').textContent = isDown ? fmtSeconds(downSec) : '--';
+  updateBattery(battery, charging, usbPower);
+
+  trackSession({ session, isDown, downSec, alerts });
 }
 
-function formatSeconds(s) {
-  const m = Math.floor(s / 60);
-  const r = s % 60;
-  return m > 0 ? m + 'm ' + r + 's' : r + 's';
+// ---------------- Battery gauge ----------------
+function updateBattery(pct, charging, usbPower) {
+  const el = $('batt');
+  el.hidden = false;
+  $('battFill').style.width = Math.max(4, Math.min(100, pct)) + '%';
+  $('battBolt').toggleAttribute('hidden', !charging);  // SVG has no .hidden property
+  el.classList.toggle('charging', charging);
+  el.classList.toggle('low', !usbPower && pct <= 15);
+  if (usbPower && !charging) $('battText').textContent = 'Full';
+  else $('battText').textContent = pct + '%';
+  el.title = charging ? 'Charging' : (usbPower ? 'Plugged in, fully charged' : 'Battery ' + pct + '%');
 }
 
+// ---------------- Commands ----------------
 async function sendCommand(cmd) {
   if (!controlChar) return;
   try {
@@ -293,6 +705,7 @@ async function sendCommand(cmd) {
   }
 }
 
+// ---------------- Settings ----------------
 async function readSettings() {
   const view = await queued(() => settingsChar.readValue());
   if (view.byteLength < 7) {
@@ -300,6 +713,7 @@ async function readSettings() {
     return null;
   }
   currentAngle = view.getUint8(0);
+  drawThreshold();
   $('angleInput').value  = currentAngle;
   $('delayInput').value  = view.getUint16(1, true);
   $('repeatInput').value = view.getUint16(3, true);
@@ -354,25 +768,182 @@ async function saveSettings(playTest) {
       showMessage('The glasses did not accept these settings. Check that both the app and firmware are the latest versions.', true);
       return;
     }
-    const names = ['1 long', '3 short', '2 medium'];
     showMessage('Saved on glasses: ' + angle + '°, alert after ' + delay + ' s, repeat every ' + repeat +
-                ' s, strength ' + level + ', ' + names[pattern] + '.');
+                ' s, strength ' + level + ', ' + PATTERN_NAMES[pattern] + '.');
   } catch (err) {
     showMessage(err.message, true);
   }
 }
 
-$('connectBtn').addEventListener('click', connect);
-$('disconnectBtn').addEventListener('click', disconnect);
+// ---------------- Session history ----------------
+// A session is recorded while the glasses report "session on" and the app is connected.
+let history = loadJSON(HISTORY_KEY, []);
+let active = loadJSON(ACTIVE_KEY, null);
+if (active) active.partial = true;  // the app was closed during a session, so there is a gap
+let lastStatusAt = null;
+let lastActiveSave = 0;
+
+function trackSession(s) {
+  const now = Date.now();
+
+  // A saved session not seen for over 10 minutes is a different session: close it first
+  if (active && now - active.lastSeen > 10 * 60000) finishSession();
+
+  if (s.session) {
+    if (!active) {
+      active = { start: now, lastSeen: now, alerts: 0, headDownMs: 0, longestDownSec: 0, partial: false };
+    }
+    // Add head-down time since the last status update (capped, so gaps are not counted)
+    if (lastStatusAt && s.isDown) active.headDownMs += Math.min(now - lastStatusAt, 2000);
+    active.alerts = Math.max(active.alerts, s.alerts);
+    active.longestDownSec = Math.max(active.longestDownSec, s.downSec);
+    active.lastSeen = now;
+    if (now - lastActiveSave > 5000) { saveJSON(ACTIVE_KEY, active); lastActiveSave = now; }
+  } else if (active) {
+    finishSession();
+  }
+
+  lastStatusAt = now;
+  updateLiveSession();
+}
+
+function sessionTrackerDisconnected() {
+  lastStatusAt = null;
+  if (active) { active.partial = true; saveJSON(ACTIVE_KEY, active); }
+  updateLiveSession();
+}
+
+function finishSession() {
+  const rec = {
+    start: active.start,
+    end: active.lastSeen,
+    alerts: active.alerts,
+    headDownMs: active.headDownMs,
+    longestDownSec: active.longestDownSec,
+    partial: active.partial
+  };
+  // Skip accidental sessions shorter than 10 seconds
+  if (rec.end - rec.start >= 10000) {
+    history.unshift(rec);
+    if (history.length > MAX_SESSIONS) history.length = MAX_SESSIONS;
+    saveJSON(HISTORY_KEY, history);
+  }
+  active = null;
+  try { localStorage.removeItem(ACTIVE_KEY); } catch (e) {}
+  renderHistory();
+}
+
+function updateLiveSession() {
+  if (active) {
+    const dur = active.lastSeen - active.start;
+    $('elapsedValue').textContent = fmtDuration(dur);
+    $('alertsValue').textContent = active.alerts;
+    $('downTotalValue').textContent = fmtDuration(active.headDownMs) + ' (' + pct(active.headDownMs, dur) + ')';
+  } else {
+    $('elapsedValue').textContent = '--';
+    $('downTotalValue').textContent = '--';
+    if (!sessionOn) $('alertsValue').textContent = '--';
+  }
+}
+
+function summarize(list) {
+  let time = 0, alerts = 0, down = 0;
+  list.forEach(r => { time += r.end - r.start; alerts += r.alerts; down += r.headDownMs; });
+  return { count: list.length, time, alerts, down };
+}
+
+function renderHistory() {
+  const now = new Date();
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  const weekAgo = startOfToday - 6 * 86400000;
+
+  const today = summarize(history.filter(r => r.start >= startOfToday));
+  const week  = summarize(history.filter(r => r.start >= weekAgo));
+
+  $('todaySessions').textContent = today.count;
+  $('todayTime').textContent = fmtDuration(today.time);
+  $('todayAlerts').textContent = today.alerts;
+  $('todayDown').textContent = pct(today.down, today.time);
+  $('weekSessions').textContent = week.count;
+  $('weekTime').textContent = fmtDuration(week.time);
+  $('weekAlerts').textContent = week.alerts;
+  $('weekDown').textContent = pct(week.down, week.time);
+
+  const listEl = $('sessionList');
+  listEl.innerHTML = '';
+  if (history.length === 0) {
+    listEl.innerHTML = '<div class="muted">No sessions yet. Start one from the Home tab.</div>';
+    return;
+  }
+  history.slice(0, 100).forEach(r => {
+    const d = new Date(r.start);
+    const dur = r.end - r.start;
+    const item = document.createElement('div');
+    item.className = 'session-item';
+    item.innerHTML =
+      '<div class="session-head"><span>' +
+        d.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' }) + ', ' +
+        d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' }) +
+        (r.partial ? '<span class="tag">partial</span>' : '') +
+      '</span><span>' + fmtDuration(dur) + '</span></div>' +
+      '<div class="session-meta">' + r.alerts + ' alert' + (r.alerts === 1 ? '' : 's') +
+        ' · head down ' + fmtDuration(r.headDownMs) + ' (' + pct(r.headDownMs, dur) + ')' +
+        ' · longest ' + fmtSeconds(r.longestDownSec) + '</div>';
+    listEl.appendChild(item);
+  });
+}
+
+function exportCSV() {
+  if (history.length === 0) { showMessage('No sessions to export.', true); return; }
+  const rows = [['start', 'end', 'duration_min', 'alerts', 'head_down_min', 'head_down_pct', 'longest_head_down_s', 'partial']];
+  history.forEach(r => {
+    const dur = r.end - r.start;
+    rows.push([
+      new Date(r.start).toISOString(), new Date(r.end).toISOString(),
+      (dur / 60000).toFixed(1), r.alerts, (r.headDownMs / 60000).toFixed(1),
+      dur > 0 ? (r.headDownMs / dur * 100).toFixed(1) : '0', r.longestDownSec, r.partial ? 'yes' : 'no'
+    ]);
+  });
+  const csv = rows.map(r => r.join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'focus-glasses-sessions-' + new Date().toISOString().slice(0, 10) + '.csv';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+
+function clearHistory() {
+  if (!confirm('Delete all session history on this phone? This cannot be undone.')) return;
+  history = [];
+  saveJSON(HISTORY_KEY, history);
+  renderHistory();
+  showMessage('History cleared.');
+}
+
+// ---------------- Wire up ----------------
+$('mainBtn').addEventListener('click', mainButton);
+$('scanBtn').addEventListener('click', chooseDevice);
+$('sessionBtn').addEventListener('click', () => sendCommand(sessionOn ? 2 : 1));
 $('saveBtn').addEventListener('click', () => saveSettings(false));
 $('strengthInput').addEventListener('input', () => $('strengthValue').textContent = $('strengthInput').value);
 $('strengthInput').addEventListener('change', () => saveSettings(true));
 patternInputs.forEach(r => r.addEventListener('change', () => saveSettings(true)));
 cmdButtons.forEach(b => b.addEventListener('click', () => sendCommand(Number(b.dataset.cmd))));
+$('exportBtn').addEventListener('click', exportCSV);
+$('clearBtn').addEventListener('click', clearHistory);
 ['angleInput', 'delayInput', 'repeatInput'].forEach(id =>
   $(id).addEventListener('input', () => showMessage('')));
 
+drawTicks();
+drawThreshold();
 setConnectedUI(false);
+setConnState('off', 'Not connected');
+updateLiveSession();
+renderHistory();
+autoConnect();
 </script>
 </body>
 </html>
