@@ -75,7 +75,7 @@
 </head>
 <body>
 <main>
-  <h1>Focus Glasses</h1>
+  <h1>Focus Glasses <span style="font-size:13px; font-weight:400; color:var(--muted);">app v0.3.1</span></h1>
 
   <div class="card">
     <div class="row">
@@ -297,7 +297,7 @@ async function readSettings() {
   const view = await queued(() => settingsChar.readValue());
   if (view.byteLength < 7) {
     showMessage('Glasses firmware is out of date. Upload the latest glasses_ble.ino.', true);
-    return;
+    return null;
   }
   currentAngle = view.getUint8(0);
   $('angleInput').value  = currentAngle;
@@ -307,6 +307,10 @@ async function readSettings() {
   $('strengthValue').textContent = view.getUint8(5);
   const pattern = view.getUint8(6);
   patternInputs.forEach(r => r.checked = Number(r.value) === pattern);
+  return {
+    angle: currentAngle, delay: view.getUint16(1, true), repeat: view.getUint16(3, true),
+    level: view.getUint8(5), pattern: pattern
+  };
 }
 
 function selectedPattern() {
@@ -339,8 +343,20 @@ async function saveSettings(playTest) {
     view.setUint8(6, pattern);
     await queued(() => settingsChar.writeValue(buf));
     if (playTest) await sendCommand(4);
-    await readSettings();
-    showMessage(playTest ? 'Saved. Playing test buzz.' : 'Settings saved.');
+
+    // Give the glasses a moment to apply, then read back and confirm
+    await new Promise(r => setTimeout(r, 300));
+    const got = await readSettings();
+    if (!got) return;
+    const ok = got.angle === angle && got.delay === delay && got.repeat === repeat &&
+               got.level === level && got.pattern === pattern;
+    if (!ok) {
+      showMessage('The glasses did not accept these settings. Check that both the app and firmware are the latest versions.', true);
+      return;
+    }
+    const names = ['1 long', '3 short', '2 medium'];
+    showMessage('Saved on glasses: ' + angle + '°, alert after ' + delay + ' s, repeat every ' + repeat +
+                ' s, strength ' + level + ', ' + names[pattern] + '.');
   } catch (err) {
     showMessage(err.message, true);
   }
