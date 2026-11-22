@@ -136,6 +136,26 @@
     border: 2px solid var(--border); background: var(--inset); color: var(--text);
   }
   input[type=number]:focus { outline: none; border-color: var(--line); }
+  input[type=time] {
+    font: inherit; font-size: 28px; font-weight: 800; padding: 8px 12px; border-radius: 10px;
+    border: 2px solid var(--border); background: var(--inset); color: var(--text); width: 100%;
+  }
+  input[type=time]:focus { outline: none; border-color: var(--line); }
+  input[type=time]:disabled { opacity: 0.35; }
+  .day-chips { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+  .day-chips .chip { padding: 9px 0; text-align: center; }
+  .score-row { display: grid; grid-template-columns: 92px 1fr 34px; align-items: center; gap: 10px; margin-top: 8px; font-size: 14px; font-weight: 700; }
+  .score-row .bar { height: 10px; background: var(--inset); border-radius: 5px; overflow: hidden; }
+  .score-row .bar div { height: 100%; background: var(--line); border-radius: 5px; }
+  .score-row .num { text-align: right; font-variant-numeric: tabular-nums; }
+  .goal-bar { height: 14px; background: var(--inset); border-radius: 7px; overflow: hidden; margin-top: 8px; }
+  #goalFill { height: 100%; width: 0; background: var(--line); border-radius: 7px; transition: width 0.6s; }
+  #goalFill.done { background: var(--yellow); }
+  .week-line { position: absolute; left: 0; right: 0; border-top: 2px dashed var(--muted); pointer-events: none; }
+  .week-wrap { position: relative; }
+  .help-list { margin: 10px 0 0; padding-left: 18px; font-size: 13px; line-height: 1.5; color: var(--muted); }
+  .help-list b { color: var(--text); }
+  #goalBody[hidden], #alarmRinging[hidden] { display: none; }
   input[type=range] { width: 100%; height: 32px; accent-color: var(--slider); cursor: pointer; margin: 0; }
   .field { margin-bottom: 14px; }
   .ticks { display: flex; justify-content: space-between; font-size: 12px; font-weight: 600; color: var(--muted); padding: 0 7px; }
@@ -149,6 +169,95 @@
   .pattern input:checked + span { background: var(--yellow); color: var(--on-yellow); border-color: var(--yellow); }
   .pattern input:focus-visible + span { outline: 2px solid var(--line); outline-offset: 2px; }
   .pattern input:disabled + span { opacity: 0.35; cursor: default; }
+
+  /* Work timer */
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip {
+    padding: 9px 12px; font-size: 14px; font-weight: 700; border-radius: 999px;
+    border: 2px solid var(--border); background: transparent; color: var(--text);
+  }
+  .chip.selected { background: var(--yellow); border-color: var(--yellow); color: var(--on-yellow); }
+  .custom-timer { display: flex; align-items: center; gap: 8px; margin-top: 10px; font-weight: 700; }
+  .custom-timer[hidden] { display: none; }
+  .custom-timer input { width: 80px; }
+  .timer-running { margin-bottom: 12px; }
+  .timer-running[hidden], #timerPicker[hidden] { display: none; }
+  .timer-left { font-size: 44px; font-weight: 800; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+  .timer-bar { height: 10px; background: var(--inset); border-radius: 5px; overflow: hidden; margin-top: 6px; }
+  #timerFill { height: 100%; width: 0; background: var(--yellow); transition: width 0.5s linear; }
+
+  /* Break reminders */
+  .banner {
+    background: var(--yellow); color: var(--on-yellow); font-weight: 800;
+    border-radius: 10px; padding: 12px; margin-bottom: 12px;
+  }
+  .banner[hidden] { display: none; }
+  .switch { position: relative; display: inline-block; width: 52px; height: 30px; margin: 0; }
+  .switch input { opacity: 0; width: 0; height: 0; }
+  .slider {
+    position: absolute; inset: 0; cursor: pointer; border-radius: 999px;
+    background: var(--border); transition: background 0.2s;
+  }
+  .slider::before {
+    content: ""; position: absolute; width: 22px; height: 22px; left: 4px; top: 4px;
+    background: #ffffff; border-radius: 50%; transition: transform 0.2s;
+  }
+  .switch input:checked + .slider { background: var(--yellow); }
+  .switch input:checked + .slider::before { transform: translateX(22px); background: var(--on-yellow); }
+  .switch input:focus-visible + .slider { outline: 2px solid var(--line); outline-offset: 2px; }
+  .switch input:disabled + .slider { opacity: 0.35; cursor: default; }
+  .chip:disabled { opacity: 0.35; cursor: default; }
+
+  /* Pomodoro */
+  .pomo-desc { margin: -4px 0 12px; font-size: 14px; line-height: 1.45; color: var(--text); }
+  .stepper-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 0; border-bottom: 1px solid var(--border); font-weight: 700; }
+  .stepper-row:last-of-type { border-bottom: none; }
+  .stepper { display: flex; align-items: center; gap: 8px; }
+  .stepper span:not(.unit) { min-width: 28px; text-align: center; font-size: 20px; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .stepper .unit { font-size: 12px; color: var(--muted); min-width: 22px; }
+  .step { width: 40px; height: 40px; padding: 0; font-size: 22px; line-height: 1; border-radius: 50%; }
+  #pomoRunning[hidden], #pomoSetup[hidden] { display: none; }
+  .phase-tag {
+    font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em;
+    padding: 5px 10px; border-radius: 999px; background: var(--line); color: var(--card);
+  }
+  .phase-tag.break { background: var(--yellow); color: var(--on-yellow); }
+  .pomo-clock { font-size: 64px; font-weight: 800; letter-spacing: -0.03em; text-align: center; margin: 10px 0 4px; font-variant-numeric: tabular-nums; }
+  #pomoFill { height: 100%; width: 0; background: var(--yellow); transition: width 0.9s linear; }
+  .pomo-dots { display: flex; justify-content: center; gap: 8px; margin-top: 12px; }
+  .pomo-dots span { width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--line); }
+  .pomo-dots span.done { background: var(--line); }
+  .pomo-dots span.now { background: var(--yellow); border-color: var(--yellow); }
+
+  /* Restlessness */
+  .big-stat { font-size: 52px; font-weight: 800; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+  #restFill { height: 100%; width: 0; background: var(--line); transition: width 0.9s linear; }
+  #restFill.high { background: var(--yellow); }
+  .phase-tag.calm { background: var(--inset); color: var(--text); }
+
+  /* Posture */
+  .label-sm { font-size: 11px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; }
+  .week-chart { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; height: 140px; margin-top: 8px; align-items: end; }
+  .week-col { display: flex; flex-direction: column; align-items: center; height: 100%; gap: 4px; }
+  .week-track { flex: 1; width: 100%; display: flex; align-items: flex-end; justify-content: center; min-height: 0; }
+  .week-val { font-size: 12px; font-weight: 800; height: 16px; }
+  .week-bar { width: 100%; max-width: 30px; background: var(--line); border-radius: 6px 6px 2px 2px; min-height: 3px; }
+  .week-bar.today { background: var(--yellow); }
+  .week-bar.empty { background: var(--inset); }
+  .week-day { font-size: 11px; font-weight: 700; color: var(--muted); }
+  .week-day.today { color: var(--text); }
+
+  /* Breathing */
+  #breathSetup[hidden], #breathRunning[hidden], #stepsWhere[hidden], #stepsStatsCard[hidden] { display: none; }
+  .breath-stage { position: relative; height: 240px; display: flex; align-items: center; justify-content: center; }
+  .breath-circle {
+    position: absolute; width: 220px; height: 220px; border-radius: 50%;
+    background: var(--yellow); opacity: 0.9; transform: scale(0.65);
+    box-shadow: 0 0 40px rgba(255, 214, 10, 0.5);
+  }
+  .breath-text { position: relative; text-align: center; color: var(--on-yellow); }
+  #breathPhaseText { font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; }
+  .breath-count { font-size: 48px; font-weight: 800; font-variant-numeric: tabular-nums; }
 
   /* History list */
   .session-item { border-top: 1px solid var(--border); padding: 12px 0; }
@@ -166,13 +275,17 @@
     background: var(--chrome); display: flex; justify-content: center;
     padding-bottom: env(safe-area-inset-bottom);
   }
-  .tabs { display: grid; grid-template-columns: repeat(3, 1fr); width: 100%; max-width: 520px; }
+  .tabs { display: grid; grid-template-columns: repeat(4, 1fr); width: 100%; max-width: 520px; }
   .tab {
     border: none; border-radius: 0; background: transparent; color: var(--chrome-muted);
-    padding: 15px 4px; font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em;
+    padding: 15px 2px; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em;
     border-top: 3px solid transparent;
   }
   .tab.active { color: var(--yellow); border-top-color: var(--yellow); }
+  .icon-btn { width: 40px; height: 38px; padding: 0 !important; display: inline-flex; align-items: center; justify-content: center; }
+  .icon-btn svg { width: 22px; height: 22px; min-width: 22px; flex: none; display: block; fill: var(--chrome-text); }
+  .icon-btn.active { background: var(--yellow) !important; border-color: var(--yellow) !important; }
+  .icon-btn.active svg { fill: var(--on-yellow); }
 </style>
 </head>
 <body>
@@ -192,6 +305,9 @@
       </div>
     </div>
     <div style="display:flex; gap:8px;">
+      <button id="settingsBtn" class="small icon-btn" aria-label="Settings" title="Settings">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.14 12.94a7.07 7.07 0 0 0 .06-.94 7.07 7.07 0 0 0-.06-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.61-.22l-2.39.96a7.03 7.03 0 0 0-1.62-.94l-.36-2.54a.5.5 0 0 0-.5-.42h-3.84a.5.5 0 0 0-.5.42l-.36 2.54c-.59.24-1.13.56-1.62.94l-2.39-.96a.5.5 0 0 0-.61.22L2.71 8.84a.5.5 0 0 0 .12.64l2.03 1.58a7.07 7.07 0 0 0 0 1.88l-2.03 1.58a.5.5 0 0 0-.12.64l1.92 3.32c.13.22.39.3.61.22l2.39-.96c.49.38 1.03.7 1.62.94l.36 2.54c.05.24.25.42.5.42h3.84c.25 0 .45-.18.5-.42l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.48 0 .61-.22l1.92-3.32a.5.5 0 0 0-.12-.64zM12 15.5A3.5 3.5 0 1 1 12 8.5a3.5 3.5 0 0 1 0 7z"/></svg>
+      </button>
       <button id="scanBtn" class="small">Scan</button>
       <button id="mainBtn" class="primary small">Connect</button>
     </div>
@@ -248,6 +364,33 @@
         <div class="stat"><div class="label">Alerts</div><div class="value" id="alertsValue">--</div></div>
         <div class="stat"><div class="label">Head down (total)</div><div class="value" id="downTotalValue">--</div></div>
       </div>
+      <div id="timerPicker" class="field" style="margin-bottom:12px;">
+        <label>Work timer</label>
+        <div class="chips">
+          <button class="chip" data-min="0">Off</button>
+          <button class="chip" data-min="25">25m</button>
+          <button class="chip" data-min="45">45m</button>
+          <button class="chip" data-min="60">1h</button>
+          <button class="chip" data-min="90">1h 30m</button>
+          <button class="chip" data-min="120">2h</button>
+          <button class="chip" data-min="custom">Custom</button>
+        </div>
+        <div id="customTimer" class="custom-timer" hidden>
+          <input id="timerH" type="number" min="0" max="12" inputmode="numeric" value="0" aria-label="Hours"><span>h</span>
+          <input id="timerM" type="number" min="0" max="59" inputmode="numeric" value="30" aria-label="Minutes"><span>m</span>
+        </div>
+        <div class="muted" style="margin-top:8px;">At the end, the glasses buzz 3 times, 3 rounds, and the session stops.</div>
+      </div>
+      <div id="breakBanner" class="banner" hidden>Time for a break. Get up and move for a minute.</div>
+      <div id="battBanner" class="banner" hidden>Battery low. Charge the glasses soon.</div>
+      <div id="pausedBanner" class="banner" hidden>Paused: glasses are off. Put them on to resume.</div>
+      <div id="timerRunning" class="timer-running" hidden>
+        <div class="row">
+          <span class="timer-left" id="timerLeft">--</span>
+          <span class="muted" id="timerOf">left</span>
+        </div>
+        <div class="timer-bar"><div id="timerFill"></div></div>
+      </div>
       <button id="sessionBtn" class="primary" style="width:100%;" disabled>Start session</button>
     </div>
 
@@ -262,10 +405,276 @@
     </div>
 
     <div class="card">
+      <div class="row" style="margin-bottom:6px;">
+        <span class="muted">Since you last got up</span>
+        <span id="stillValue" style="font-weight:600;">--</span>
+      </div>
       <div class="row">
         <span class="muted">Head down right now</span>
         <span id="downValue" style="font-weight:600;">--</span>
       </div>
+    </div>
+    <div class="card" id="findCard">
+      <h2>Find my glasses</h2>
+      <p class="pomo-desc">Makes the glasses buzz at full strength every 1.5 seconds so you can hear them. Stops when you pick them up, tap Stop, or after 1 minute. They need to be connected (within about 10 m).</p>
+      <button id="findBtn" class="primary" style="width:100%;" disabled>Buzz my glasses</button>
+    </div>
+  </section>
+
+  <!-- STATS -->
+  <section id="screen-stats" class="screen">
+    <div class="card" id="scoreCard">
+      <h2>Focus score</h2>
+      <p class="pomo-desc">A 0 to 100 score for each session, built from four things the glasses measure. A day's score is the average of that day's sessions, weighted by length.</p>
+      <div class="row">
+        <span class="big-stat" id="scoreToday">--</span>
+        <span class="phase-tag calm" id="scoreLabel">--</span>
+      </div>
+      <div id="scoreParts"></div>
+      <div class="label-sm" style="margin-top:18px;">Last 7 days</div>
+      <div class="week-chart" id="scoreWeek" role="img" aria-label="Focus score for each of the last 7 days"></div>
+      <div class="row" style="margin-top:12px;">
+        <span class="muted">7-day average</span>
+        <span id="scoreWeekAvg" style="font-weight:800;">--</span>
+      </div>
+      <div class="row" style="margin-top:6px;">
+        <span class="muted">Change from the 7 days before</span>
+        <span id="scoreWeekChange" style="font-weight:800;">--</span>
+      </div>
+      <div class="muted" style="margin-top:10px;">Head up 30%, posture 25%, calm 25%, few alerts 20%. Sessions under 1 minute are not scored. The running session counts as it goes.</div>
+    </div>
+
+    <div class="card" id="restCard">
+      <h2>Restlessness</h2>
+      <p class="pomo-desc">How much your head is moving around. Fidgeting and looking around count as restless; reading and typing do not. A lower score usually means deeper focus.</p>
+      <div class="row">
+        <span class="big-stat" id="restNow">--</span>
+        <span id="restLabel" class="phase-tag">--</span>
+      </div>
+      <div class="muted" style="margin-top:2px;">Last minute</div>
+      <div class="timer-bar" style="margin-top:10px;"><div id="restFill"></div></div>
+      <div class="row" style="margin-top:12px;">
+        <span class="muted">This session</span>
+        <span id="restSession" style="font-weight:800;">--</span>
+      </div>
+      <div class="row" style="margin-top:6px;">
+        <span class="muted">Today <span id="restTodayCount"></span></span>
+        <span id="restToday" style="font-weight:800;">--</span>
+      </div>
+    </div>
+
+    <div class="card" id="postureCard">
+      <h2>Posture</h2>
+      <p class="pomo-desc">How much of your session time your head stays within 15° of level. Tilting further forward, like looking down at a phone, puts extra strain on your neck. Higher is better.</p>
+      <div class="row">
+        <span class="big-stat" id="postureToday">--</span>
+        <span id="postureLabel" class="phase-tag calm">--</span>
+      </div>
+      <div class="muted" style="margin-top:2px;">Today's score</div>
+      <div class="grid" style="margin-top:12px;">
+        <div class="stat"><div class="label">Avg head angle</div><div class="value" id="postureAvg">--</div></div>
+        <div class="stat"><div class="label">Past 15° today</div><div class="value" id="posturePast">--</div></div>
+      </div>
+      <div class="row" style="margin-top:12px;">
+        <span class="muted">This session</span>
+        <span id="postureSession" style="font-weight:800;">--</span>
+      </div>
+      <div class="label-sm" style="margin-top:16px;">Last 7 days</div>
+      <div class="week-chart" id="postureWeek" role="img" aria-label="Posture score for each of the last 7 days"></div>
+    </div>
+    <div class="card" id="stepsStatsCard" hidden>
+      <h2>Steps</h2>
+        <div class="row">
+          <span class="big-stat" id="stepsToday">--</span>
+          <span class="muted">today</span>
+        </div>
+        <div class="row" style="margin-top:6px;">
+          <span class="muted">Yesterday</span>
+          <span id="stepsYesterday" style="font-weight:800;">--</span>
+        </div>
+        <div class="label-sm" style="margin-top:16px;">Last 7 days</div>
+        <div class="week-chart" id="stepsWeek" role="img" aria-label="Steps for each of the last 7 days"></div>
+        <div class="muted" style="margin-top:10px;" id="stepsNote">Steps are only counted while the glasses are on. Switching them off resets today's count on the glasses; the app keeps the highest count it saw.</div>
+    </div>
+  </section>
+
+  <!-- TOOLS -->
+  <section id="screen-tools" class="screen">
+    <div class="card" id="goalCard">
+      <h2>Daily focus goal</h2>
+      <p class="pomo-desc">How much session time you aim for each day. Breaks and paused time don't count. The glasses give a rising double buzz when you reach it.</p>
+      <div class="chips" id="goalChips">
+        <button class="chip goal-chip" data-min="0" disabled>Off</button>
+        <button class="chip goal-chip" data-min="60" disabled>1h</button>
+        <button class="chip goal-chip" data-min="120" disabled>2h</button>
+        <button class="chip goal-chip" data-min="180" disabled>3h</button>
+        <button class="chip goal-chip" data-min="240" disabled>4h</button>
+        <button class="chip goal-chip" data-min="360" disabled>6h</button>
+      </div>
+      <div id="goalBody">
+        <div class="row" style="margin-top:16px;">
+          <span class="big-stat" id="goalDone" style="font-size:40px;">--</span>
+          <span class="muted" id="goalOf">--</span>
+        </div>
+        <div class="goal-bar"><div id="goalFill"></div></div>
+        <div class="row" style="margin-top:12px;">
+          <span class="muted">Current streak</span>
+          <span id="goalStreak" style="font-weight:800;">--</span>
+        </div>
+        <div class="row" style="margin-top:6px;">
+          <span class="muted">Best streak</span>
+          <span id="goalBest" style="font-weight:800;">--</span>
+        </div>
+        <div class="label-sm" style="margin-top:16px;">Focus time, last 7 days</div>
+        <div class="week-wrap">
+          <div class="week-chart" id="goalWeek" role="img" aria-label="Focus time for each of the last 7 days against the goal"></div>
+        </div>
+        <div class="muted" style="margin-top:8px;">Yellow bars met the goal. The dashed line is the goal.</div>
+      </div>
+      <div class="muted" id="goalNote" style="margin-top:10px;">Connect the glasses to change the goal.</div>
+    </div>
+
+    <div class="card" id="pomoCard">
+      <h2>Pomodoro</h2>
+      <p class="pomo-desc">Work in focused blocks with short breaks in between. After a set number of rounds you get a longer break, then the cycle repeats. Short, regular breaks help you stay focused for longer.</p>
+
+      <div id="pomoSetup">
+        <div class="stepper-row">
+          <span>Work</span>
+          <div class="stepper"><button class="step" data-k="work" data-d="-5" aria-label="Less work time">−</button><span id="pomoWork">25</span><span class="unit">min</span><button class="step" data-k="work" data-d="5" aria-label="More work time">+</button></div>
+        </div>
+        <div class="stepper-row">
+          <span>Short break</span>
+          <div class="stepper"><button class="step" data-k="short" data-d="-1" aria-label="Shorter short break">−</button><span id="pomoShort">5</span><span class="unit">min</span><button class="step" data-k="short" data-d="1" aria-label="Longer short break">+</button></div>
+        </div>
+        <div class="stepper-row">
+          <span>Long break</span>
+          <div class="stepper"><button class="step" data-k="long" data-d="-5" aria-label="Shorter long break">−</button><span id="pomoLong">15</span><span class="unit">min</span><button class="step" data-k="long" data-d="5" aria-label="Longer long break">+</button></div>
+        </div>
+        <div class="stepper-row">
+          <span>Rounds before long break</span>
+          <div class="stepper"><button class="step" data-k="rounds" data-d="-1" aria-label="Fewer rounds">−</button><span id="pomoRounds">4</span><span class="unit"></span><button class="step" data-k="rounds" data-d="1" aria-label="More rounds">+</button></div>
+        </div>
+        <button id="pomoStartBtn" class="primary" style="width:100%; margin-top:6px;" disabled>Start Pomodoro</button>
+        <div class="muted" id="pomoNote" style="margin-top:8px;">Runs on the glasses until you stop it. Break starts: short, short, long. Back to work: long, short, short. Alerts pause during breaks.</div>
+      </div>
+
+      <div id="pomoRunning" hidden>
+        <div class="row">
+          <span id="pomoPhaseTag" class="phase-tag">Work</span>
+          <span class="muted" id="pomoRoundText">Round 1 of 4</span>
+        </div>
+        <div class="pomo-clock" id="pomoClock">25:00</div>
+        <div class="timer-bar"><div id="pomoFill"></div></div>
+        <div class="pomo-dots" id="pomoDots"></div>
+        <div class="grid" style="margin-top:12px;">
+          <button id="pomoSkipBtn">Skip phase</button>
+          <button id="pomoStopBtn">Stop</button>
+        </div>
+      </div>
+    </div>
+    <div class="card" id="tickCard">
+      <h2>Time awareness</h2>
+      <p class="pomo-desc">A light tap at regular intervals during a session, so you feel time passing without checking a clock. The number of taps counts up: 1 tap at the first mark, 2 at the second, up to 4, then back to 1.</p>
+      <div class="row" style="margin-bottom:12px;">
+        <span style="font-weight:700;">Tap during sessions</span>
+        <label class="switch"><input id="tickToggle" type="checkbox" disabled><span class="slider"></span></label>
+      </div>
+      <div class="field" style="margin-bottom:10px;">
+        <label>Every</label>
+        <div class="chips">
+          <button class="chip tick-chip" data-min="10" disabled>10m</button>
+          <button class="chip tick-chip" data-min="15" disabled>15m</button>
+          <button class="chip tick-chip" data-min="30" disabled>30m</button>
+          <button class="chip tick-chip" data-min="60" disabled>1h</button>
+        </div>
+      </div>
+      <div class="row" style="margin-bottom:12px;">
+        <span class="muted">Next tap</span>
+        <span id="tickNext" style="font-weight:800;">--</span>
+      </div>
+      <button id="tickTestBtn" style="width:100%;" disabled>Test tap</button>
+      <div class="muted" style="margin-top:8px;">Quiet during Pomodoro breaks and while snoozed.</div>
+    </div>
+
+    <div class="card" id="breathCard">
+      <h2>Breathing</h2>
+      <p class="pomo-desc">A short paced-breathing exercise to reset when you feel tense or scattered. The glasses guide each breath, so you can close your eyes: a buzz that swells means breathe in, a soft bump means hold, a buzz that fades means breathe out.</p>
+
+      <div id="breathSetup">
+        <div class="field">
+          <label>Pattern</label>
+          <div class="chips">
+            <button class="chip breath-pattern" data-p="0">Box 4-4-4-4</button>
+            <button class="chip breath-pattern" data-p="1">Relax 4-7-8</button>
+            <button class="chip breath-pattern" data-p="2">Even 5-5</button>
+          </div>
+          <div class="muted" id="breathPatternNote" style="margin-top:8px;"></div>
+        </div>
+        <div class="field">
+          <label>Length</label>
+          <div class="chips">
+            <button class="chip breath-min" data-m="1">1 min</button>
+            <button class="chip breath-min" data-m="3">3 min</button>
+            <button class="chip breath-min" data-m="5">5 min</button>
+          </div>
+        </div>
+        <button id="breathStartBtn" class="primary" style="width:100%;" disabled>Start breathing</button>
+      </div>
+
+      <div id="breathRunning" hidden>
+        <div class="breath-stage">
+          <div class="breath-circle" id="breathCircle"></div>
+          <div class="breath-text">
+            <div id="breathPhaseText">Breathe in</div>
+            <div class="breath-count" id="breathCount">4</div>
+          </div>
+        </div>
+        <div class="row" style="margin-top:6px;">
+          <span class="muted" id="breathLeft"></span>
+          <button id="breathStopBtn" class="small">Stop</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" id="stepsCard">
+      <h2>Steps</h2>
+      <p class="pomo-desc">Counts your steps while you wear the glasses, using the motion sensor's built-in step counter. Optional: it is off until you turn it on. The count starts fresh at midnight.</p>
+      <div class="row">
+        <span style="font-weight:700;">Count steps</span>
+        <label class="switch"><input id="stepsToggle" type="checkbox" disabled><span class="slider"></span></label>
+      </div>
+      <div class="muted" id="stepsWhere" style="margin-top:10px;" hidden>Your step counts are in the Stats tab.</div>
+    </div>
+    <div class="card" id="alarmCard">
+      <h2>Silent alarm</h2>
+      <p class="pomo-desc">A vibrating alarm only you feel. At the set time the glasses give 2 long buzzes every 3 seconds for up to 2 minutes. To stop it: nod or shake your head, double-tap the arm, or tap Stop here.</p>
+      <div id="alarmRinging" hidden>
+        <div class="banner">Alarm ringing</div>
+        <button id="alarmStopBtn" class="primary" style="width:100%; margin-bottom:14px;">Stop alarm</button>
+      </div>
+      <div class="row" style="margin-bottom:12px;">
+        <span style="font-weight:700;">Alarm on</span>
+        <label class="switch"><input id="alarmToggle" type="checkbox" disabled><span class="slider"></span></label>
+      </div>
+      <div class="field">
+        <label for="alarmTime">Time</label>
+        <input id="alarmTime" type="time" value="07:00" disabled>
+      </div>
+      <div class="field">
+        <label>Repeat on (none selected = once, then it turns off)</label>
+        <div class="day-chips" id="alarmDays">
+          <button class="chip day-chip" data-d="0" disabled>Su</button>
+          <button class="chip day-chip" data-d="1" disabled>Mo</button>
+          <button class="chip day-chip" data-d="2" disabled>Tu</button>
+          <button class="chip day-chip" data-d="3" disabled>We</button>
+          <button class="chip day-chip" data-d="4" disabled>Th</button>
+          <button class="chip day-chip" data-d="5" disabled>Fr</button>
+          <button class="chip day-chip" data-d="6" disabled>Sa</button>
+        </div>
+      </div>
+      <div style="font-weight:700;" id="alarmSummary">--</div>
+      <div class="muted" style="margin-top:8px;">The glasses get the time from this app each time it connects. If they restart or the battery runs out, open the app once so the alarm can ring.</div>
     </div>
   </section>
 
@@ -311,7 +720,76 @@
       </div>
       <div class="muted">Changing strength or pattern saves it and plays a test buzz.</div>
     </div>
-    <div class="muted" style="text-align:center; margin-top:4px;">Focus Glasses app v0.6.1</div>
+    <div class="card">
+      <h2>Break reminders</h2>
+      <div class="row" style="margin-bottom:12px;">
+        <span style="font-weight:700;">Remind me to get up</span>
+        <label class="switch"><input id="breakToggle" type="checkbox" disabled><span class="slider"></span></label>
+      </div>
+      <div class="field" style="margin-bottom:10px;">
+        <label>After sitting still for</label>
+        <div class="chips" id="breakChips">
+          <button class="chip break-chip" data-min="30" disabled>30m</button>
+          <button class="chip break-chip" data-min="45" disabled>45m</button>
+          <button class="chip break-chip" data-min="60" disabled>1h</button>
+          <button class="chip break-chip" data-min="90" disabled>1h 30m</button>
+        </div>
+      </div>
+      <button id="breakTestBtn" class="cmd-extra" style="width:100%;" disabled>Test break buzz</button>
+      <div class="muted" style="margin-top:8px;">During a session, the glasses buzz 2 long pulses when you have not got up for this long, then every 10 minutes until you walk around for a bit. Turning your head while sitting does not count as moving.</div>
+    </div>
+    <div class="card" id="pauseCard">
+      <h2>Auto-pause</h2>
+      <div class="row" style="margin-bottom:12px;">
+        <span style="font-weight:700;">Pause when I take them off</span>
+        <label class="switch"><input id="pauseToggle" type="checkbox" disabled><span class="slider"></span></label>
+      </div>
+      <div class="field" style="margin-bottom:10px;">
+        <label>After no movement for</label>
+        <div class="chips" id="pauseChips">
+          <button class="chip pause-chip" data-min="1" disabled>1m</button>
+          <button class="chip pause-chip" data-min="2" disabled>2m</button>
+          <button class="chip pause-chip" data-min="5" disabled>5m</button>
+          <button class="chip pause-chip" data-min="10" disabled>10m</button>
+        </div>
+      </div>
+      <div class="muted">When the glasses sit completely still (on a desk, folded, charging), the session pauses: no alerts, timers stop, and that time is left out of your stats. Put them back on and they resume with one soft bump. If it pauses while you are wearing them, choose a longer time.</div>
+    </div>
+    <div class="card" id="tapCard">
+      <h2>Taps and nods</h2>
+      <div class="field">
+        <label>Double-tap the arm to</label>
+        <div class="chips" id="tapChips">
+          <button class="chip tap-chip" data-a="0" disabled>Nothing</button>
+          <button class="chip tap-chip" data-a="1" disabled>Snooze</button>
+          <button class="chip tap-chip" data-a="2" disabled>Start / stop session</button>
+        </div>
+      </div>
+      <div class="row" style="margin-bottom:6px;">
+        <span style="font-weight:700;">Nod or shake to answer a buzz</span>
+        <label class="switch"><input id="gestureToggle" type="checkbox" disabled><span class="slider"></span></label>
+      </div>
+      <ul class="help-list">
+        <li><b>Double-tap</b>: tap the outside of the arm twice, quickly. With Snooze, double-tap again to cancel the snooze.</li>
+        <li><b>After a head-down alert</b>: nod = snooze 10 minutes, shake = restart the timer.</li>
+        <li><b>After a break reminder</b>: nod = taking the break now, shake = remind me in 20 minutes.</li>
+        <li><b>Alarm or Find buzzing</b>: nod or shake stops it. Double-tap also stops it unless double-tap is set to Nothing.</li>
+        <li>Nods and shakes are 3 quick swings and only count for 15 seconds after a buzz.</li>
+      </ul>
+      <div class="row" style="margin-top:12px;">
+        <span class="muted">Last detected</span>
+        <span id="gestureLast" style="font-weight:800;">--</span>
+      </div>
+    </div>
+    <div class="card" id="lowBattCard">
+      <h2>Low battery warning</h2>
+      <div class="row">
+        <span style="font-weight:700;">Buzz when the battery is low</span>
+        <label class="switch"><input id="lowBattToggle" type="checkbox" disabled><span class="slider"></span></label>
+      </div>
+      <div class="muted" style="margin-top:8px;">2 slow fading buzzes at 15%, then 3 more at 5%. The Home tab also shows a banner below 15%.</div>
+    </div>
+    <div class="muted" style="text-align:center; margin-top:4px;">Focus Glasses app v0.20</div>
   </section>
 
   <!-- HISTORY -->
@@ -346,7 +824,7 @@
       <button id="clearBtn" class="danger">Clear history</button>
     </div>
     <div class="muted" style="margin-top:8px;">
-      History is stored in this browser on this phone. Sessions are only recorded while the app is open and connected.
+      History is stored in this browser on this phone. The glasses keep the last session's numbers, so a session is saved the next time the app connects, even if the app was closed. Switching the glasses off during a session saves it as partial.
     </div>
   </section>
 </main>
@@ -354,7 +832,8 @@
 <nav class="tabbar">
   <div class="tabs">
     <button class="tab active" data-screen="home">Home</button>
-    <button class="tab" data-screen="settings">Settings</button>
+    <button class="tab" data-screen="tools">Tools</button>
+    <button class="tab" data-screen="stats">Stats</button>
     <button class="tab" data-screen="history">History</button>
   </div>
 </nav>
@@ -365,12 +844,15 @@ const SERVICE_UUID  = 'a3c40001-6f2b-4d8e-9c1a-5b7e2f9d3a10';
 const CONTROL_UUID  = 'a3c40002-6f2b-4d8e-9c1a-5b7e2f9d3a10';
 const SETTINGS_UUID = 'a3c40003-6f2b-4d8e-9c1a-5b7e2f9d3a10';
 const STATUS_UUID   = 'a3c40004-6f2b-4d8e-9c1a-5b7e2f9d3a10';
+const EXTRA_UUID    = 'a3c40005-6f2b-4d8e-9c1a-5b7e2f9d3a10';
+const STEPS_UUID    = 'a3c40006-6f2b-4d8e-9c1a-5b7e2f9d3a10';
+const MORE_UUID     = 'a3c40007-6f2b-4d8e-9c1a-5b7e2f9d3a10';
 
 const HISTORY_KEY = 'fg_history_v1';
 const ACTIVE_KEY  = 'fg_active_session_v1';
 const MAX_SESSIONS = 500;
 
-let device = null, controlChar = null, settingsChar = null, statusChar = null;
+let device = null, controlChar = null, settingsChar = null, statusChar = null, extraChar = null;
 let currentAngle = 25;
 let sessionOn = false;
 
@@ -406,7 +888,8 @@ function fmtDuration(ms) {
   if (sec < 60) return sec + 's';
   const totalMin = Math.round(ms / 60000);
   const h = Math.floor(totalMin / 60), m = totalMin % 60;
-  return h > 0 ? h + 'h ' + m + 'm' : m + 'm';
+  if (h > 0) return m > 0 ? h + 'h ' + m + 'm' : h + 'h';
+  return m + 'm';
 }
 function fmtSeconds(s) {
   const m = Math.floor(s / 60), r = s % 60;
@@ -417,13 +900,17 @@ function pct(part, whole) {
 }
 
 // ---------------- Tabs ----------------
-document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => {
-  document.querySelectorAll('.tab').forEach(x => x.classList.toggle('active', x === t));
-  document.querySelectorAll('.screen').forEach(s =>
-    s.classList.toggle('active', s.id === 'screen-' + t.dataset.screen));
-  if (t.dataset.screen === 'history') renderHistory();
+function showScreen(name) {
+  document.querySelectorAll('.tab').forEach(x => x.classList.toggle('active', x.dataset.screen === name));
+  $('settingsBtn').classList.toggle('active', name === 'settings');
+  document.querySelectorAll('.screen').forEach(s => s.classList.toggle('active', s.id === 'screen-' + name));
+  if (name === 'history') renderHistory();
+  if (name === 'tools') renderGoal();
+  if (name === 'stats') { renderScore(); renderRest(); renderPosture(); }
   window.scrollTo(0, 0);
-}));
+}
+document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => showScreen(t.dataset.screen)));
+$('settingsBtn').addEventListener('click', () => showScreen('settings'));
 
 // ---------------- Connection ----------------
 // Remembers the last glasses used. While the app is open it reconnects automatically
@@ -456,11 +943,32 @@ function setConnState(state, text) {
 }
 
 function setConnectedUI(connected) {
+  if (!connected) { pomo.phase = 0; restNow = null; restSession = null; postureNow = null; }
   $('saveBtn').disabled = !connected;
   $('sessionBtn').disabled = !connected;
   $('strengthInput').disabled = !connected;
   patternInputs.forEach(r => r.disabled = !connected);
   cmdButtons.forEach(b => b.disabled = !connected);
+  $('breakToggle').disabled = !connected;
+  $('tickToggle').disabled = !connected;
+  $('breathStartBtn').disabled = !connected;
+  $('stepsToggle').disabled = !connected;
+  $('findBtn').disabled = !connected;
+  if (!connected) setFinding(false);
+  $('tickTestBtn').disabled = !connected;
+  document.querySelectorAll('.tick-chip').forEach(c => c.disabled = !connected);
+  $('pomoStartBtn').disabled = !connected;
+  $('breakTestBtn').disabled = !connected;
+  document.querySelectorAll('.break-chip').forEach(c => c.disabled = !connected);
+  $('pauseToggle').disabled = !connected;
+  document.querySelectorAll('.goal-chip, .tap-chip, .day-chip').forEach(c => c.disabled = !connected);
+  $('gestureToggle').disabled = !connected;
+  $('lowBattToggle').disabled = !connected;
+  $('alarmToggle').disabled = !connected;
+  $('alarmTime').disabled = !connected;
+  $('goalNote').hidden = connected;
+  if (!connected) { $('alarmRinging').hidden = true; $('battBanner').hidden = true; renderAlarmSummary(); }
+  document.querySelectorAll('.pause-chip').forEach(c => c.disabled = !connected);
   if (!connected) {
     ['sessionValue', 'alertsValue', 'stateValue', 'downValue'].forEach(id => $(id).textContent = '--');
     $('batt').hidden = true;
@@ -468,6 +976,14 @@ function setConnectedUI(connected) {
     $('pitchValue').className = '';
     $('stateValue').className = '';
     $('headGroup').style.transform = 'rotate(0deg)';
+    $('timerRunning').hidden = true;
+    $('timerPicker').hidden = false;
+    $('breakBanner').hidden = true;
+    $('stillValue').textContent = '--';
+    $('tickNext').textContent = '--';
+    $('breathSetup').hidden = false;
+    $('breathRunning').hidden = true;
+    if (typeof renderRest === 'function') renderRest();
     $('threshArc').classList.remove('active');
   }
 }
@@ -516,6 +1032,27 @@ async function connectGatt() {
     statusChar   = await service.getCharacteristic(STATUS_UUID);
     statusChar.addEventListener('characteristicvaluechanged', (e) => parseStatus(e.target.value));
     await statusChar.startNotifications();
+    extraSeen = false;
+    try {
+      extraChar = await service.getCharacteristic(EXTRA_UUID);
+      extraChar.addEventListener('characteristicvaluechanged', (e) => parseExtra(e.target.value));
+      await extraChar.startNotifications();
+    } catch (e) {
+      extraChar = null;   // firmware older than v0.7
+    }
+    try {
+      const stepsChar = await service.getCharacteristic(STEPS_UUID);
+      stepsChar.addEventListener('characteristicvaluechanged', (e) => parseSteps(e.target.value));
+      await stepsChar.startNotifications();
+    } catch (e) { /* firmware older than v0.13 */ }
+    moreSeen = false;
+    try {
+      const moreChar = await service.getCharacteristic(MORE_UUID);
+      moreChar.addEventListener('characteristicvaluechanged', (e) => parseMore(e.target.value));
+      await moreChar.startNotifications();
+    } catch (e) { /* firmware older than v0.16 */ }
+    sendClock();
+    sendFocusToday();
 
     reconnectAttempt = 0;
     setConnectedUI(true);
@@ -647,8 +1184,15 @@ function drawThreshold() {
 }
 
 // ---------------- Status ----------------
+let firmwareWarned = false;
 function parseStatus(view) {
-  if (view.byteLength < 8) return;
+  if (view.byteLength < 20) {
+    if (!firmwareWarned) {
+      showMessage('Glasses firmware is out of date. Upload the latest glasses_ble.ino to record history.', true);
+      firmwareWarned = true;
+    }
+    return;
+  }
   const flags   = view.getUint8(0);
   const pitch   = view.getInt16(1, true) / 10;
   const downSec = view.getUint16(3, true);
@@ -660,6 +1204,8 @@ function parseStatus(view) {
   const snoozed = (flags & 4) !== 0;
   const charging = (flags & 8) !== 0;
   const usbPower = (flags & 16) !== 0;
+  const timerDone = (flags & 32) !== 0;
+  const remainingSec = view.byteLength >= 20 ? view.getUint16(18, true) : 0;
 
   $('pitchValue').textContent = pitch.toFixed(1) + '°';
   $('pitchValue').className = isDown ? 'down' : '';
@@ -672,13 +1218,25 @@ function parseStatus(view) {
   $('threshArc').classList.toggle('active', isDown);
 
   sessionOn = session;
-  $('sessionValue').textContent = snoozed ? 'Snoozed' : (session ? 'On' : 'Off');
+  glassesOff = (flags & 128) !== 0;
+  $('sessionValue').textContent = (session && glassesOff) ? 'Paused' : snoozed ? 'Snoozed' : (session ? 'On' : 'Off');
+  $('pausedBanner').hidden = !(session && glassesOff);
   $('sessionBtn').textContent = session ? 'Stop session' : 'Start session';
+  updateTimerUI(session, remainingSec, view.getUint16(8, true), timerDone);
   $('sessionBtn').className = session ? '' : 'primary';
   $('downValue').textContent = isDown ? fmtSeconds(downSec) : '--';
   updateBattery(battery, charging, usbPower);
 
-  trackSession({ session, isDown, downSec, alerts });
+  trackSession({
+    session, alerts,
+    lengthSec:  view.getUint16(8, true),
+    downTotalSec: view.getUint16(10, true),
+    longestSec: view.getUint16(12, true),
+    id:         view.getUint16(14, true),
+    sinceEndSec: view.getUint16(16, true),
+    timerDone,
+    pomo: (flags & 64) !== 0
+  });
 }
 
 // ---------------- Battery gauge ----------------
@@ -691,7 +1249,725 @@ function updateBattery(pct, charging, usbPower) {
   el.classList.toggle('low', !usbPower && pct <= 15);
   if (usbPower && !charging) $('battText').textContent = 'Full';
   else $('battText').textContent = pct + '%';
+  $('battBanner').hidden = usbPower || pct > 15;
   el.title = charging ? 'Charging' : (usbPower ? 'Plugged in, fully charged' : 'Battery ' + pct + '%');
+}
+
+// ---------------- Work timer ----------------
+const TIMER_KEY = 'fg_timer_choice_v1';
+let timerChoice = loadJSON(TIMER_KEY, { preset: '0', h: 0, m: 30 });
+let lastSessionOn = false;
+
+function selectTimerChip(preset) {
+  timerChoice.preset = preset;
+  document.querySelectorAll('#timerPicker .chip').forEach(c => c.classList.toggle('selected', c.dataset.min === preset));
+  $('customTimer').hidden = preset !== 'custom';
+  saveJSON(TIMER_KEY, timerChoice);
+}
+
+function chosenTimerMinutes() {
+  if (timerChoice.preset !== 'custom') return Number(timerChoice.preset);
+  const h = Number($('timerH').value), m = Number($('timerM').value);
+  if (!Number.isInteger(h) || !Number.isInteger(m) || h < 0 || h > 12 || m < 0 || m > 59) {
+    throw new Error('Custom timer: hours 0–12 and minutes 0–59, whole numbers.');
+  }
+  const total = h * 60 + m;
+  if (total < 1 || total > 720) throw new Error('Custom timer must be between 1 minute and 12 hours.');
+  timerChoice.h = h; timerChoice.m = m; saveJSON(TIMER_KEY, timerChoice);
+  return total;
+}
+
+function fmtClock(sec) {
+  const h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), s2 = sec % 60;
+  const mm = String(m).padStart(h > 0 ? 2 : 1, '0'), ss = String(s2).padStart(2, '0');
+  return h > 0 ? h + ':' + mm + ':' + ss : mm + ':' + ss;
+}
+
+function updateTimerUI(session, remainingSec, elapsedSec, timerDone) {
+  if (session && pomo.phase > 0) {
+    // Pomodoro running: Home shows the current phase countdown
+    $('timerRunning').hidden = false;
+    $('timerPicker').hidden = true;
+    $('timerLeft').textContent = fmtClock(pomo.left);
+    $('timerOf').textContent = PHASE_NAMES[pomo.phase] + ', round ' + pomo.round + '/' + pomo.rounds;
+    $('timerFill').style.width = (pomo.len > 0 ? (1 - pomo.left / pomo.len) * 100 : 0) + '%';
+    lastSessionOn = session;
+    return;
+  }
+  const running = session && remainingSec > 0;
+  $('timerRunning').hidden = !running;
+  $('timerPicker').hidden = session;
+  if (running) {
+    const total = remainingSec + elapsedSec;
+    $('timerLeft').textContent = fmtClock(remainingSec);
+    $('timerOf').textContent = 'left of ' + fmtDuration(total * 1000);
+    $('timerFill').style.width = (total > 0 ? (elapsedSec / total * 100) : 0) + '%';
+  }
+  if (lastSessionOn && !session && timerDone) showMessage('Work session complete.');
+  lastSessionOn = session;
+}
+
+async function startOrStopSession() {
+  if (sessionOn) { await sendCommand(2); return; }
+  let minutes;
+  try { minutes = chosenTimerMinutes(); }
+  catch (err) { showMessage(err.message, true); return; }
+  if (minutes > 0) {
+    try {
+      await queued(() => controlChar.writeValue(new Uint8Array([6, minutes & 0xFF, minutes >> 8])));
+    } catch (err) { showMessage('Command failed: ' + err.message, true); }
+  } else {
+    await sendCommand(1);
+  }
+}
+
+// ---------------- Raw commands with arguments ----------------
+async function sendBytes(bytes) {
+  if (!controlChar) return;
+  try { await queued(() => controlChar.writeValue(new Uint8Array(bytes))); }
+  catch (err) { showMessage('Command failed: ' + err.message, true); }
+}
+function u32(v) { return [v & 0xFF, (v >> 8) & 0xFF, (v >> 16) & 0xFF, (v >>> 24) & 0xFF]; }
+
+// ---------------- Taps and nods ----------------
+const TAP_NAMES = ['off', 'snooze', 'start/stop'];
+const GESTURE_NAMES = { 1: 'Double-tap', 2: 'Nod', 3: 'Shake' };
+let selectedTapAction = 1;
+function selectTapChip(a) {
+  selectedTapAction = a;
+  document.querySelectorAll('.tap-chip').forEach(c => c.classList.toggle('selected', Number(c.dataset.a) === a));
+}
+document.querySelectorAll('.tap-chip').forEach(c => c.addEventListener('click', () => {
+  selectTapChip(Number(c.dataset.a)); saveSettings(false);
+}));
+$('gestureToggle').addEventListener('change', () => saveSettings(false));
+$('lowBattToggle').addEventListener('change', () => saveSettings(false));
+
+// ---------------- More status from the glasses (alarm, goal, gestures) ----------------
+let moreSeen = false;
+let glassesFocusSec = 0;
+let lastGestureCounter = null;
+let alarmState = { on: false, min: 420, days: 0, ringing: false, synced: false };
+
+function parseMore(view) {
+  if (view.byteLength < 9 || view.getUint8(0) < 1) return;
+  const f = view.getUint8(1);
+  const prevRinging = alarmState.ringing;
+  alarmState = { on: (f & 1) !== 0, ringing: (f & 2) !== 0, synced: (f & 16) !== 0,
+                 min: view.getUint16(2, true), days: view.getUint8(4) };
+  glassesFocusSec = view.getUint16(5, true);
+  $('alarmRinging').hidden = !alarmState.ringing;
+  if (!moreSeen || (prevRinging && !alarmState.ringing)) showAlarmInputs();   // first read, or a one-time alarm turned itself off
+  renderAlarmSummary();
+  const g = view.getUint8(7), cnt = view.getUint8(8);
+  if (lastGestureCounter !== null && cnt !== lastGestureCounter && GESTURE_NAMES[g]) {
+    $('gestureLast').textContent = GESTURE_NAMES[g] + ' at ' + new Date().toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit', second: '2-digit' });
+  }
+  lastGestureCounter = cnt;
+  moreSeen = true;
+  renderGoal();
+}
+
+// ---------------- Silent alarm ----------------
+const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+function alarmDaysFromChips() {
+  let m = 0;
+  document.querySelectorAll('.day-chip').forEach(c => { if (c.classList.contains('selected')) m |= 1 << Number(c.dataset.d); });
+  return m;
+}
+function showAlarmInputs() {
+  $('alarmToggle').checked = alarmState.on;
+  $('alarmTime').value = String(Math.floor(alarmState.min / 60)).padStart(2, '0') + ':' + String(alarmState.min % 60).padStart(2, '0');
+  document.querySelectorAll('.day-chip').forEach(c => c.classList.toggle('selected', (alarmState.days & (1 << Number(c.dataset.d))) !== 0));
+}
+function fmtClock(min) {
+  return new Date(2000, 0, 1, Math.floor(min / 60), min % 60).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+}
+function daysText(m) {
+  if (m === 0) return 'once';
+  if (m === 0x7F) return 'every day';
+  if (m === 0x3E) return 'on weekdays';
+  if (m === 0x41) return 'on weekends';
+  return 'on ' + DAY_NAMES.filter((_, i) => m & (1 << i)).join(', ');
+}
+function renderAlarmSummary() {
+  const el = $('alarmSummary');
+  if (connState !== 'on' || !moreSeen) { el.textContent = 'Connect the glasses to set the alarm.'; return; }
+  if (!alarmState.on) { el.textContent = 'Alarm off.'; return; }
+  el.textContent = 'Rings at ' + fmtClock(alarmState.min) + ', ' + daysText(alarmState.days) + '.' +
+                   (alarmState.synced ? '' : ' The glasses do not know the time yet.');
+}
+async function saveAlarm() {
+  const [h, m] = ($('alarmTime').value || '07:00').split(':').map(Number);
+  const min = h * 60 + m;
+  const on = $('alarmToggle').checked;
+  const days = alarmDaysFromChips();
+  await sendBytes([16, min & 0xFF, min >> 8, on ? 1 : 0, days]);
+  alarmState = Object.assign({}, alarmState, { on, min, days });
+  renderAlarmSummary();
+  showMessage(on ? 'Alarm set for ' + fmtClock(min) + ', ' + daysText(days) + '.' : 'Alarm off.');
+}
+$('alarmToggle').addEventListener('change', saveAlarm);
+$('alarmTime').addEventListener('change', () => { $('alarmToggle').checked = true; saveAlarm(); });
+document.querySelectorAll('.day-chip').forEach(c => c.addEventListener('click', () => {
+  c.classList.toggle('selected'); saveAlarm();
+}));
+$('alarmStopBtn').addEventListener('click', () => { $('alarmRinging').hidden = true; sendBytes([17]); });
+
+// ---------------- Focus score ----------------
+function clamp100(v) { return Math.max(0, Math.min(100, v)); }
+function scoreParts(r) {
+  const dur = r.end - r.start;
+  if (!(dur >= 60000)) return null;
+  const parts = {
+    head:    { w: 0.30, v: clamp100(100 - (r.headDownMs / dur * 100) * 1.5) },
+    posture: { w: 0.25, v: (r.posture !== null && r.posture !== undefined) ? r.posture : null },
+    calm:    { w: 0.25, v: (r.restless !== null && r.restless !== undefined) ? clamp100(100 - r.restless) : null },
+    alerts:  { w: 0.20, v: clamp100(100 - (r.alerts / (dur / 3600000)) * 8) }
+  };
+  let sum = 0, w = 0;
+  Object.values(parts).forEach(p => { if (p.v !== null) { sum += p.v * p.w; w += p.w; } });
+  return { parts, total: Math.round(sum / w) };
+}
+function focusScore(r) { const s = scoreParts(r); return s ? s.total : null; }
+
+function allSessions() { return live ? [Object.assign({ inProgress: true }, live)].concat(history) : history; }
+
+// Length-weighted average of the scores (and each part) of a list of sessions
+function dayScore(list) {
+  let w = 0, total = 0;
+  const parts = { head: [0, 0], posture: [0, 0], calm: [0, 0], alerts: [0, 0] };
+  list.forEach(r => {
+    const s = scoreParts(r);
+    if (!s) return;
+    const d = r.end - r.start;
+    total += s.total * d; w += d;
+    Object.keys(parts).forEach(k => { if (s.parts[k].v !== null) { parts[k][0] += s.parts[k].v * d; parts[k][1] += d; } });
+  });
+  if (!w) return null;
+  const out = { total: Math.round(total / w), parts: {} };
+  Object.keys(parts).forEach(k => out.parts[k] = parts[k][1] ? Math.round(parts[k][0] / parts[k][1]) : null);
+  return out;
+}
+function scoreWord(v) { return v >= 85 ? 'Excellent' : v >= 70 ? 'Good' : v >= 55 ? 'Fair' : 'Low'; }
+
+function drawWeek(chart, cols, maxV, fmtVal, highlight) {
+  chart.innerHTML = '';
+  cols.forEach(c => {
+    const col = document.createElement('div'); col.className = 'week-col';
+    const val = document.createElement('div'); val.className = 'week-val';
+    val.textContent = (c.v !== null && c.v !== undefined) ? fmtVal(c.v) : '';
+    const track = document.createElement('div'); track.className = 'week-track';
+    const bar = document.createElement('div');
+    const has = c.v !== null && c.v !== undefined && c.v > 0;
+    bar.className = 'week-bar' + (highlight(c) ? ' today' : '') + (has ? '' : ' empty');
+    bar.style.height = has ? Math.max(4, Math.min(100, c.v / maxV * 100)) + '%' : '3px';
+    track.appendChild(bar);
+    const day = document.createElement('div'); day.className = 'week-day' + (c.i === 0 ? ' today' : '');
+    day.textContent = c.i === 0 ? 'Today' : new Date(c.start).toLocaleDateString(undefined, { weekday: 'short' });
+    col.append(val, track, day);
+    chart.appendChild(col);
+  });
+}
+
+function sessionsOnDay(all, start) { return all.filter(r => r.start >= start && r.start < start + 86400000); }
+
+function renderScore() {
+  const all = allSessions();
+  const todayStart = dayStart(Date.now());
+  const today = dayScore(sessionsOnDay(all, todayStart));
+  $('scoreToday').textContent = today ? today.total : '--';
+  $('scoreLabel').textContent = today ? scoreWord(today.total) : 'No sessions today';
+  $('scoreLabel').className = 'phase-tag' + (!today || today.total >= 70 ? ' calm' : today.total < 55 ? ' break' : '');
+  const names = { head: 'Head up', posture: 'Posture', calm: 'Calm', alerts: 'Few alerts' };
+  $('scoreParts').innerHTML = Object.keys(names).map(k => {
+    const v = today ? today.parts[k] : null;
+    return '<div class="score-row"><span>' + names[k] + '</span><div class="bar"><div style="width:' + (v === null ? 0 : v) +
+           '%"></div></div><span class="num">' + (v === null ? '--' : v) + '</span></div>';
+  }).join('');
+
+  const cols = [];
+  for (let i = 6; i >= 0; i--) {
+    const start = todayStart - i * 86400000;
+    const d = dayScore(sessionsOnDay(all, start));
+    cols.push({ i, start, v: d ? d.total : null });
+  }
+  drawWeek($('scoreWeek'), cols, 100, v => v, c => c.i === 0);
+
+  const weekAvg = dayScore(all.filter(r => r.start >= todayStart - 6 * 86400000));
+  const prevAvg = dayScore(all.filter(r => r.start >= todayStart - 13 * 86400000 && r.start < todayStart - 6 * 86400000));
+  $('scoreWeekAvg').textContent = weekAvg ? weekAvg.total : '--';
+  $('scoreWeekChange').textContent = (weekAvg && prevAvg)
+    ? (weekAvg.total - prevAvg.total > 0 ? '+' : '') + (weekAvg.total - prevAvg.total) + ' (was ' + prevAvg.total + ')' : '--';
+}
+
+// ---------------- Daily focus goal ----------------
+let selectedGoalMin = 120;
+function selectGoalChip(min) {
+  selectedGoalMin = min;
+  document.querySelectorAll('.goal-chip').forEach(c => c.classList.toggle('selected', Number(c.dataset.min) === min));
+  renderGoal();
+}
+document.querySelectorAll('.goal-chip').forEach(c => c.addEventListener('click', () => {
+  selectGoalChip(Number(c.dataset.min)); saveSettings(false);
+}));
+
+function focusMsOnDay(all, start) {
+  return sessionsOnDay(all, start).reduce((t, r) => t + (r.end - r.start), 0);
+}
+function todayFocusMs() {
+  const appMs = focusMsOnDay(allSessions(), dayStart(Date.now()));
+  return Math.max(appMs, connState === 'on' && moreSeen ? glassesFocusSec * 1000 : 0);
+}
+async function sendFocusToday() {
+  const sec = Math.floor(focusMsOnDay(allSessions(), dayStart(Date.now())) / 1000);
+  if (sec > 0) await sendBytes([18].concat(u32(sec)));
+}
+
+function renderGoal() {
+  const goalMs = selectedGoalMin * 60000;
+  $('goalBody').hidden = !selectedGoalMin;
+  if (!selectedGoalMin) return;
+  const all = allSessions();
+  const todayStart = dayStart(Date.now());
+  const done = todayFocusMs();
+  $('goalDone').textContent = fmtDuration(done);
+  $('goalOf').textContent = 'of ' + fmtDuration(goalMs) + (done >= goalMs ? ', goal met' : '');
+  $('goalFill').style.width = Math.min(100, done / goalMs * 100) + '%';
+  $('goalFill').classList.toggle('done', done >= goalMs);
+
+  // Streaks: days in a row that met the goal (today only counts once it is met)
+  const met = (start) => (start === todayStart ? done : focusMsOnDay(all, start)) >= goalMs;
+  let streak = 0;
+  for (let d = met(todayStart) ? todayStart : todayStart - 86400000; met(d); d -= 86400000) streak++;
+  let best = 0, run = 0;
+  const oldest = all.length ? dayStart(Math.min(...all.map(r => r.start))) : todayStart;
+  for (let d = oldest; d <= todayStart; d += 86400000) {
+    d = dayStart(d + 3600000);           // stay on day boundaries across clock changes
+    if (met(d)) { run++; best = Math.max(best, run); } else run = 0;
+  }
+  const days = n => n + (n === 1 ? ' day' : ' days');
+  $('goalStreak').textContent = days(streak);
+  $('goalBest').textContent = days(best);
+
+  const cols = [];
+  for (let i = 6; i >= 0; i--) {
+    const start = todayStart - i * 86400000;
+    const ms = i === 0 ? done : focusMsOnDay(all, start);
+    cols.push({ i, start, v: ms > 0 ? ms : null });
+  }
+  const maxV = Math.max(goalMs * 1.25, ...cols.map(c => c.v || 0));
+  drawWeek($('goalWeek'), cols, maxV, v => (v / 3600000).toFixed(1) + 'h', c => c.v >= goalMs);
+  // Goal line, placed inside the bar area (below the value labels, above the day labels)
+  const chart = $('goalWeek');
+  const track = chart.querySelector('.week-track');
+  let line = chart.parentElement.querySelector('.week-line');
+  if (!line) { line = document.createElement('div'); line.className = 'week-line'; chart.parentElement.appendChild(line); }
+  if (track) {
+    const top = track.offsetTop + track.offsetHeight * (1 - goalMs / maxV);
+    line.style.top = top + 'px';
+  }
+}
+
+// ---------------- Find my glasses ----------------
+let finding = false;
+function setFinding(on) {
+  finding = on;
+  const btn = $('findBtn');
+  btn.textContent = on ? 'Stop buzzing' : 'Buzz my glasses';
+  btn.className = on ? '' : 'primary';
+}
+$('findBtn').addEventListener('click', async () => {
+  const start = !finding;
+  setFinding(start);                 // the glasses confirm within a second
+  await sendCommand(start ? 14 : 15);
+});
+
+// ---------------- Auto-pause ----------------
+let selectedPauseMin = 2;
+let glassesOff = false;
+let pausedNowSec = 0;   // this session's paused time, from the glasses
+function selectPauseChip(min) {
+  selectedPauseMin = min;
+  document.querySelectorAll('.pause-chip').forEach(c => c.classList.toggle('selected', Number(c.dataset.min) === min));
+}
+
+// ---------------- Break reminders ----------------
+let selectedBreakMin = 60;
+
+function selectBreakChip(min) {
+  selectedBreakMin = min;
+  document.querySelectorAll('.break-chip').forEach(c => c.classList.toggle('selected', Number(c.dataset.min) === min));
+}
+
+function parseExtra(view) {
+  if (view.byteLength < 4 || view.getUint8(0) < 1) return;
+  const breakDue = (view.getUint8(1) & 1) !== 0;
+  const stillSec = view.getUint16(2, true);
+  $('breakBanner').hidden = !breakDue;
+  $('stillValue').textContent = sessionOn ? fmtDuration(stillSec * 1000) : '--';
+
+  if (view.getUint8(0) >= 2 && view.byteLength >= 11) {
+    pomo.phase  = view.getUint8(4);
+    pomo.round  = view.getUint8(5);
+    pomo.left   = view.getUint16(6, true);
+    pomo.rounds = view.getUint8(8);
+    pomo.len    = view.getUint16(9, true);
+  } else {
+    pomo.phase = 0;
+  }
+  renderPomo();
+
+  if (view.getUint8(0) >= 3 && view.byteLength >= 13) {
+    restNow = view.getUint8(11);
+    const rs = view.getUint8(12);
+    restSession = rs === 255 ? null : rs;
+  } else {
+    restNow = null; restSession = null;
+  }
+  extraSeen = true;
+  renderRest();
+
+  if (view.getUint8(0) >= 5 && view.byteLength >= 19) {
+    const avg = view.getInt8(15);
+    const sc = view.getUint8(18);
+    postureNow = (sc === 255) ? null : { avg: avg, pastSec: view.getUint16(16, true), score: sc };
+  } else {
+    postureNow = null;
+  }
+  renderPosture();
+
+  updateBreathFromGlasses((view.getUint8(0) >= 6 && view.byteLength >= 20) ? view.getUint8(19) : 0);
+
+  const tickIn = (view.getUint8(0) >= 4 && view.byteLength >= 15) ? view.getUint16(13, true) : 0;
+  $('tickNext').textContent = (sessionOn && tickIn > 0) ? 'in ' + fmtClock(tickIn)
+    : ($('tickToggle').checked ? 'when a session starts' : 'off');
+}
+
+// ---------------- Posture ----------------
+let postureNow = null;   // current or last session from the glasses: { avg, pastSec, score }
+
+function postureWord(score) {
+  return score >= 80 ? 'Good' : score >= 60 ? 'Fair' : 'Poor';
+}
+
+function dayStart(t) { const d = new Date(t); return new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime(); }
+
+// Weighted by session length
+function postureFor(list) {
+  let wScore = 0, wAvg = 0, total = 0, past = 0;
+  list.forEach(r => {
+    const d = Math.max(1, r.end - r.start);
+    wScore += r.posture * d; wAvg += r.avgAngle * d; total += d; past += r.pastSec || 0;
+  });
+  if (total === 0) return null;
+  return { score: Math.round(wScore / total), avg: Math.round(wAvg / total), pastSec: past };
+}
+
+function postureSessions() {
+  const list = history.filter(r => r.posture !== null && r.posture !== undefined);
+  if (live && live.posture !== null && live.posture !== undefined) list.push(live);
+  return list;
+}
+
+function renderPosture() {
+  const all = postureSessions();
+  const today = postureFor(all.filter(r => r.start >= dayStart(Date.now())));
+  if (today) {
+    $('postureToday').textContent = today.score;
+    $('postureLabel').textContent = postureWord(today.score);
+    $('postureLabel').className = 'phase-tag' + (today.score >= 80 ? ' calm' : today.score < 60 ? ' break' : '');
+    $('postureAvg').textContent = today.avg + '°';
+    $('posturePast').textContent = fmtDuration(today.pastSec * 1000);
+  } else {
+    $('postureToday').textContent = '--';
+    $('postureLabel').textContent = '--';
+    $('postureLabel').className = 'phase-tag calm';
+    $('postureAvg').textContent = '--';
+    $('posturePast').textContent = '--';
+  }
+  $('postureSession').textContent = (connState === 'on' && sessionOn && postureNow)
+    ? postureNow.score + ' · avg ' + postureNow.avg + '°' : '--';
+
+  // 7-day chart
+  const chart = $('postureWeek');
+  chart.innerHTML = '';
+  const todayStart = dayStart(Date.now());
+  for (let i = 6; i >= 0; i--) {
+    const start = todayStart - i * 86400000;
+    const p = postureFor(all.filter(r => r.start >= start && r.start < start + 86400000));
+    const col = document.createElement('div');
+    col.className = 'week-col';
+    const val = document.createElement('div');
+    val.className = 'week-val';
+    val.textContent = p ? p.score : '';
+    const bar = document.createElement('div');
+    bar.className = 'week-bar' + (i === 0 ? ' today' : '') + (p ? '' : ' empty');
+    bar.style.height = p ? Math.max(4, p.score) + '%' : '3px';
+    const day = document.createElement('div');
+    day.className = 'week-day' + (i === 0 ? ' today' : '');
+    day.textContent = i === 0 ? 'Today' : new Date(start).toLocaleDateString(undefined, { weekday: 'short' });
+    const track = document.createElement('div');
+    track.className = 'week-track';
+    track.appendChild(bar);
+    col.append(val, track, day);
+    chart.appendChild(col);
+  }
+}
+
+// ---------------- Breathing guide ----------------
+const BREATH_KEY = 'fg_breath_v1';
+const BREATH_PATTERNS = [[4, 4, 4, 4], [4, 7, 8, 0], [5, 0, 5, 0]];
+const BREATH_NOTES = [
+  'In 4, hold 4, out 4, hold 4. Steady and calming.',
+  'In 4, hold 7, out 8. The long exhale slows you down the most.',
+  'In 5, out 5. The simplest, good for a quick reset.'
+];
+const BREATH_WORDS = ['Breathe in', 'Hold', 'Breathe out', 'Hold'];
+let breathPrefs = loadJSON(BREATH_KEY, { pattern: 0, minutes: 3 });
+let breath = { active: false, phase: -1, endsAt: 0 };   // endsAt: set when started from this app
+
+function renderBreathPrefs() {
+  document.querySelectorAll('.breath-pattern').forEach(c => c.classList.toggle('selected', Number(c.dataset.p) === breathPrefs.pattern));
+  document.querySelectorAll('.breath-min').forEach(c => c.classList.toggle('selected', Number(c.dataset.m) === breathPrefs.minutes));
+  $('breathPatternNote').textContent = BREATH_NOTES[breathPrefs.pattern];
+}
+
+function updateBreathFromGlasses(byte19) {
+  const active = (byte19 & 0x80) !== 0;
+  const phase = byte19 & 0x03;
+  const left = (byte19 >> 2) & 0x0F;
+  const wasActive = breath.active;
+  breath.active = active;
+  $('breathSetup').hidden = active;
+  $('breathRunning').hidden = !active;
+  if (!active) {
+    breath.phase = -1;
+    if (wasActive && breath.endsAt) showMessage('Breathing exercise finished.');
+    breath.endsAt = 0;
+    return;
+  }
+  $('breathPhaseText').textContent = BREATH_WORDS[phase];
+  $('breathCount').textContent = left;
+  if (phase !== breath.phase) {
+    // Animate the circle over the length of the phase: grow on in, shrink on out, stay on hold
+    breath.phase = phase;
+    const len = BREATH_PATTERNS[breathPrefs.pattern][phase] || left || 1;
+    const c = $('breathCircle');
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    c.style.transition = reduce ? 'none' : 'transform ' + Math.max(1, left) + 's ease-in-out';
+    if (phase === 0) c.style.transform = 'scale(1)';
+    else if (phase === 2) c.style.transform = 'scale(0.65)';
+  }
+  if (breath.endsAt) {
+    const sec = Math.max(0, Math.round((breath.endsAt - Date.now()) / 1000));
+    $('breathLeft').textContent = sec > 0 ? fmtClock(sec) + ' left' : 'Finishing this breath';
+  } else {
+    $('breathLeft').textContent = '';
+  }
+}
+
+async function startBreathing() {
+  try {
+    await queued(() => controlChar.writeValue(new Uint8Array([11, breathPrefs.pattern, breathPrefs.minutes])));
+    breath.endsAt = Date.now() + breathPrefs.minutes * 60000;
+    breath.phase = -1;
+  } catch (err) {
+    showMessage('Command failed: ' + err.message, true);
+  }
+}
+
+// ---------------- Step counter ----------------
+const STEPS_ON_KEY = 'fg_steps_on_v1';   // last known on/off, so Stats shows steps while disconnected
+function showStepsStats(on) {
+  $('stepsStatsCard').hidden = !on;
+  $('stepsWhere').hidden = !on;
+  saveJSON(STEPS_ON_KEY, on);
+}
+const STEPS_KEY = 'fg_steps_v1';                 // { 'YYYY-MM-DD': steps }
+let stepsByDay = loadJSON(STEPS_KEY, {});
+
+function dateKey(t) {
+  const d = new Date(t);
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+function localDayNumber(t) {
+  return Math.floor((t / 1000 - new Date(t).getTimezoneOffset() * 60) / 86400);
+}
+
+// Tell the glasses the local time so they can reset the count at midnight
+async function sendClock() {
+  if (!controlChar) return;
+  const local = Math.floor(Date.now() / 1000) - new Date().getTimezoneOffset() * 60;
+  try {
+    await queued(() => controlChar.writeValue(new Uint8Array([13, local & 0xFF, (local >> 8) & 0xFF, (local >> 16) & 0xFF, (local >>> 24) & 0xFF])));
+  } catch (e) { /* older firmware ignores it */ }
+}
+
+function keepMax(key, value) {
+  if (!(key in stepsByDay) || value > stepsByDay[key]) { stepsByDay[key] = value; return true; }
+  return false;
+}
+
+function parseSteps(view) {
+  if (view.byteLength < 14 || view.getUint8(0) < 1) return;
+  if (view.byteLength >= 17) {
+    pausedNowSec = view.getUint16(14, true);
+    setFinding((view.getUint8(16) & 2) !== 0);
+  }
+  const flags = view.getUint8(1);
+  const on = (flags & 1) !== 0, synced = (flags & 2) !== 0;
+  const today = view.getUint32(2, true), yesterday = view.getUint32(6, true);
+  const day = view.getUint32(10, true);
+  // Only store when the glasses' day matches the phone's day
+  if (on && synced && day === localDayNumber(Date.now())) {
+    let changed = keepMax(dateKey(Date.now()), today);
+    if (yesterday > 0) changed = keepMax(dateKey(Date.now() - 86400000), yesterday) || changed;
+    if (changed) saveJSON(STEPS_KEY, stepsByDay);
+  }
+  renderSteps(on ? today : null);
+}
+
+function renderSteps(liveToday) {
+  const todayKey = dateKey(Date.now());
+  const today = liveToday !== null && liveToday !== undefined ? Math.max(liveToday, stepsByDay[todayKey] || 0) : stepsByDay[todayKey];
+  $('stepsToday').textContent = today !== undefined ? today.toLocaleString() : '--';
+  const y = stepsByDay[dateKey(Date.now() - 86400000)];
+  $('stepsYesterday').textContent = y !== undefined ? y.toLocaleString() : '--';
+
+  const days = [];
+  for (let i = 6; i >= 0; i--) {
+    const t = Date.now() - i * 86400000;
+    days.push({ i, t, v: i === 0 ? today : stepsByDay[dateKey(t)] });
+  }
+  const max = Math.max(1, ...days.map(d => d.v || 0));
+  const chart = $('stepsWeek');
+  chart.innerHTML = '';
+  days.forEach(d => {
+    const col = document.createElement('div'); col.className = 'week-col';
+    const val = document.createElement('div'); val.className = 'week-val';
+    val.textContent = d.v !== undefined ? (d.v >= 1000 ? (d.v / 1000).toFixed(1) + 'k' : d.v) : '';
+    const track = document.createElement('div'); track.className = 'week-track';
+    const bar = document.createElement('div');
+    bar.className = 'week-bar' + (d.i === 0 ? ' today' : '') + (d.v ? '' : ' empty');
+    bar.style.height = d.v ? Math.max(3, d.v / max * 100) + '%' : '3px';
+    track.appendChild(bar);
+    const day = document.createElement('div'); day.className = 'week-day' + (d.i === 0 ? ' today' : '');
+    day.textContent = d.i === 0 ? 'Today' : new Date(d.t).toLocaleDateString(undefined, { weekday: 'short' });
+    col.append(val, track, day);
+    chart.appendChild(col);
+  });
+}
+
+// ---------------- Time awareness ----------------
+let selectedTickMin = 15;
+function selectTickChip(min) {
+  selectedTickMin = min;
+  document.querySelectorAll('.tick-chip').forEach(c => c.classList.toggle('selected', Number(c.dataset.min) === min));
+}
+
+// ---------------- Restlessness ----------------
+let restNow = null, restSession = null, extraSeen = false;
+
+function restWord(pctVal) {
+  return pctVal < 15 ? 'Calm' : pctVal < 35 ? 'Some movement' : 'Restless';
+}
+
+// Today's restlessness: average over today's sessions, weighted by session length
+function renderRestToday() {
+  const startOfToday = new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate()).getTime();
+  const list = history.filter(r => r.start >= startOfToday && r.restless !== null && r.restless !== undefined);
+  if (live && live.restless !== null && live.restless !== undefined && live.start >= startOfToday) list.push(live);
+  let weighted = 0, total = 0;
+  list.forEach(r => { const d = Math.max(1, r.end - r.start); weighted += r.restless * d; total += d; });
+  if (list.length === 0) {
+    $('restToday').textContent = '--';
+    $('restTodayCount').textContent = '';
+    return;
+  }
+  const avg = Math.round(weighted / total);
+  $('restToday').textContent = avg + '% (' + restWord(avg).toLowerCase() + ')';
+  $('restTodayCount').textContent = '(' + list.length + ' session' + (list.length === 1 ? '' : 's') + ')';
+}
+
+function renderRest() {
+  renderRestToday();
+  if (connState !== 'on' || restNow === null) {
+    $('restNow').textContent = '--';
+    $('restLabel').textContent = '--';
+    $('restLabel').className = 'phase-tag calm';
+    $('restFill').style.width = '0';
+    $('restSession').textContent = '--';
+    return;
+  }
+  $('restNow').textContent = restNow + '%';
+  $('restLabel').textContent = restWord(restNow);
+  $('restLabel').className = 'phase-tag' + (restNow < 15 ? ' calm' : restNow >= 35 ? ' break' : '');
+  $('restFill').style.width = restNow + '%';
+  $('restFill').classList.toggle('high', restNow >= 35);
+  $('restSession').textContent = (sessionOn || live) && restSession !== null
+    ? restSession + '% (' + restWord(restSession).toLowerCase() + ')' : '--';
+}
+
+// ---------------- Pomodoro ----------------
+const POMO_KEY = 'fg_pomo_v1';
+const POMO_LIMITS = { work: [5, 120], short: [1, 60], long: [5, 60], rounds: [1, 10] };
+let pomoPrefs = loadJSON(POMO_KEY, { work: 25, short: 5, long: 15, rounds: 4 });
+let pomo = { phase: 0, round: 0, left: 0, rounds: 4, len: 0 };
+const PHASE_NAMES = ['', 'Work', 'Short break', 'Long break'];
+
+function renderPomoPrefs() {
+  $('pomoWork').textContent = pomoPrefs.work;
+  $('pomoShort').textContent = pomoPrefs.short;
+  $('pomoLong').textContent = pomoPrefs.long;
+  $('pomoRounds').textContent = pomoPrefs.rounds;
+}
+
+function stepPomo(key, delta) {
+  const [lo, hi] = POMO_LIMITS[key];
+  let v = pomoPrefs[key] + delta;
+  if (key === 'work' && pomoPrefs[key] < 5 && delta > 0) v = 5;
+  pomoPrefs[key] = Math.max(lo, Math.min(hi, v));
+  saveJSON(POMO_KEY, pomoPrefs);
+  renderPomoPrefs();
+}
+
+function renderPomo() {
+  const running = connState === 'on' && sessionOn && pomo.phase > 0;
+  $('pomoSetup').hidden = running;
+  $('pomoRunning').hidden = !running;
+  const otherSession = sessionOn && pomo.phase === 0;
+  $('pomoStartBtn').disabled = connState !== 'on' || otherSession;
+  $('pomoNote').textContent = otherSession
+    ? 'A regular session is running. Stop it on the Home tab to start a Pomodoro.'
+    : 'Runs on the glasses until you stop it. Break starts: short, short, long. Back to work: long, short, short. Alerts pause during breaks.';
+  if (!running) return;
+
+  const isBreak = pomo.phase !== 1;
+  $('pomoPhaseTag').textContent = PHASE_NAMES[pomo.phase];
+  $('pomoPhaseTag').className = 'phase-tag' + (isBreak ? ' break' : '');
+  $('pomoRoundText').textContent = 'Round ' + pomo.round + ' of ' + pomo.rounds;
+  $('pomoClock').textContent = fmtClock(pomo.left);
+  $('pomoFill').style.width = (pomo.len > 0 ? (1 - pomo.left / pomo.len) * 100 : 0) + '%';
+
+  const dots = $('pomoDots');
+  if (dots.childElementCount !== pomo.rounds) {
+    dots.innerHTML = '';
+    for (let i = 0; i < pomo.rounds; i++) dots.appendChild(document.createElement('span'));
+  }
+  Array.from(dots.children).forEach((d, i) => {
+    const r = i + 1;
+    d.className = (r < pomo.round || (r === pomo.round && isBreak)) ? 'done' : (r === pomo.round ? 'now' : '');
+  });
+}
+
+async function startPomodoro() {
+  try {
+    await queued(() => controlChar.writeValue(new Uint8Array([8, pomoPrefs.work, pomoPrefs.short, pomoPrefs.long, pomoPrefs.rounds])));
+    showMessage('Pomodoro started: ' + pomoPrefs.work + ' min work, round 1 of ' + pomoPrefs.rounds + '.');
+  } catch (err) {
+    showMessage('Command failed: ' + err.message, true);
+  }
 }
 
 // ---------------- Commands ----------------
@@ -708,7 +1984,7 @@ async function sendCommand(cmd) {
 // ---------------- Settings ----------------
 async function readSettings() {
   const view = await queued(() => settingsChar.readValue());
-  if (view.byteLength < 7) {
+  if (view.byteLength < 20) {
     showMessage('Glasses firmware is out of date. Upload the latest glasses_ble.ino.', true);
     return null;
   }
@@ -721,9 +1997,34 @@ async function readSettings() {
   $('strengthValue').textContent = view.getUint8(5);
   const pattern = view.getUint8(6);
   patternInputs.forEach(r => r.checked = Number(r.value) === pattern);
+  const breakOn = view.getUint8(7) === 1;
+  const breakMin = view.getUint16(8, true);
+  $('breakToggle').checked = breakOn;
+  selectBreakChip(breakMin);
+  const tickOn = view.getUint8(10) === 1;
+  const tickMin = view.getUint8(11);
+  $('tickToggle').checked = tickOn;
+  selectTickChip(tickMin);
+  const stepsOn = view.getUint8(12) === 1;
+  $('stepsToggle').checked = stepsOn;
+  showStepsStats(stepsOn);
+  const pauseOn = view.getUint8(13) === 1;
+  const pauseMin = view.getUint8(14);
+  $('pauseToggle').checked = pauseOn;
+  selectPauseChip(pauseMin);
+  const tapAction = view.getUint8(15);
+  const gesturesOn = view.getUint8(16) === 1;
+  const goalMin = view.getUint16(17, true);
+  const lowBattOn = view.getUint8(19) === 1;
+  selectTapChip(tapAction);
+  $('gestureToggle').checked = gesturesOn;
+  selectGoalChip(goalMin);
+  $('lowBattToggle').checked = lowBattOn;
   return {
     angle: currentAngle, delay: view.getUint16(1, true), repeat: view.getUint16(3, true),
-    level: view.getUint8(5), pattern: pattern
+    level: view.getUint8(5), pattern: pattern, breakOn: breakOn, breakMin: breakMin,
+    tickOn: tickOn, tickMin: tickMin, stepsOn: stepsOn, pauseOn: pauseOn, pauseMin: pauseMin,
+    tapAction: tapAction, gesturesOn: gesturesOn, goalMin: goalMin, lowBattOn: lowBattOn
   };
 }
 
@@ -747,14 +2048,36 @@ async function saveSettings(playTest) {
     const repeat  = readField('repeatInput', 5, 3600, 'Repeat');
     const level   = readField('strengthInput', 1, 10, 'Strength');
     const pattern = selectedPattern();
+    const breakOn = $('breakToggle').checked;
+    const breakMin = selectedBreakMin;
+    const tickOn = $('tickToggle').checked;
+    const tickMin = selectedTickMin;
+    const stepsOn = $('stepsToggle').checked;
+    const pauseOn = $('pauseToggle').checked;
+    const pauseMin = selectedPauseMin;
+    const tapAction = selectedTapAction;
+    const gesturesOn = $('gestureToggle').checked;
+    const goalMin = selectedGoalMin;
+    const lowBattOn = $('lowBattToggle').checked;
 
-    const buf = new ArrayBuffer(7);
+    const buf = new ArrayBuffer(20);
     const view = new DataView(buf);
     view.setUint8(0, angle);
     view.setUint16(1, delay, true);
     view.setUint16(3, repeat, true);
     view.setUint8(5, level);
     view.setUint8(6, pattern);
+    view.setUint8(7, breakOn ? 1 : 0);
+    view.setUint16(8, breakMin, true);
+    view.setUint8(10, tickOn ? 1 : 0);
+    view.setUint8(11, tickMin);
+    view.setUint8(12, stepsOn ? 1 : 0);
+    view.setUint8(13, pauseOn ? 1 : 0);
+    view.setUint8(14, pauseMin);
+    view.setUint8(15, tapAction);
+    view.setUint8(16, gesturesOn ? 1 : 0);
+    view.setUint16(17, goalMin, true);
+    view.setUint8(19, lowBattOn ? 1 : 0);
     await queued(() => settingsChar.writeValue(buf));
     if (playTest) await sendCommand(4);
 
@@ -763,87 +2086,129 @@ async function saveSettings(playTest) {
     const got = await readSettings();
     if (!got) return;
     const ok = got.angle === angle && got.delay === delay && got.repeat === repeat &&
-               got.level === level && got.pattern === pattern;
+               got.level === level && got.pattern === pattern &&
+               got.breakOn === breakOn && got.breakMin === breakMin &&
+               got.tickOn === tickOn && got.tickMin === tickMin && got.stepsOn === stepsOn &&
+               got.pauseOn === pauseOn && got.pauseMin === pauseMin &&
+               got.tapAction === tapAction && got.gesturesOn === gesturesOn &&
+               got.goalMin === goalMin && got.lowBattOn === lowBattOn;
     if (!ok) {
       showMessage('The glasses did not accept these settings. Check that both the app and firmware are the latest versions.', true);
       return;
     }
     showMessage('Saved on glasses: ' + angle + '°, alert after ' + delay + ' s, repeat every ' + repeat +
-                ' s, strength ' + level + ', ' + PATTERN_NAMES[pattern] + '.');
+                ' s, strength ' + level + ', ' + PATTERN_NAMES[pattern] +
+                ', break reminder ' + (breakOn ? 'after ' + fmtDuration(breakMin * 60000) : 'off') +
+                ', time tap ' + (tickOn ? 'every ' + fmtDuration(tickMin * 60000) : 'off') +
+                ', steps ' + (stepsOn ? 'on' : 'off') +
+                ', auto-pause ' + (pauseOn ? 'after ' + pauseMin + 'm still' : 'off') +
+                ', double-tap ' + TAP_NAMES[tapAction] + ', nods ' + (gesturesOn ? 'on' : 'off') +
+                ', goal ' + (goalMin ? fmtDuration(goalMin * 60000) : 'off') +
+                ', low battery buzz ' + (lowBattOn ? 'on' : 'off') + '.');
   } catch (err) {
     showMessage(err.message, true);
   }
 }
 
 // ---------------- Session history ----------------
-// A session is recorded while the glasses report "session on" and the app is connected.
+// The glasses keep each session's stats and report them in every status update.
+// The app copies them: a running session is shown live, and a finished one is saved
+// the next time the app is connected, even if the app was closed during the session.
+const LIVE_KEY = 'fg_live_session_v2';
 let history = loadJSON(HISTORY_KEY, []);
-let active = loadJSON(ACTIVE_KEY, null);
-if (active) active.partial = true;  // the app was closed during a session, so there is a gap
-let lastStatusAt = null;
-let lastActiveSave = 0;
+let live = loadJSON(LIVE_KEY, null);       // last seen running session
+let lastLiveSave = 0;
+
+function isRecorded(id, start) {
+  // Same id within 12 hours counts as the same session (ids can repeat after a restart)
+  return history.some(r => r.id === id && Math.abs(r.start - start) < 12 * 3600000);
+}
+
+const CLEARED_KEY = 'fg_cleared_before_v1';
+function addToHistory(rec) {
+  if (rec.end - rec.start < 10000) return;      // skip accidental sessions under 10 s
+  if (rec.end <= loadJSON(CLEARED_KEY, 0)) return;  // ended before the last Clear history
+  if (isRecorded(rec.id, rec.start)) return;
+  history.unshift(rec);
+  history.sort((a, b) => b.start - a.start);
+  if (history.length > MAX_SESSIONS) history.length = MAX_SESSIONS;
+  saveJSON(HISTORY_KEY, history);
+  renderHistory();
+}
 
 function trackSession(s) {
   const now = Date.now();
 
-  // A saved session not seen for over 10 minutes is a different session: close it first
-  if (active && now - active.lastSeen > 10 * 60000) finishSession();
-
-  if (s.session) {
-    if (!active) {
-      active = { start: now, lastSeen: now, alerts: 0, headDownMs: 0, longestDownSec: 0, partial: false };
-    }
-    // Add head-down time since the last status update (capped, so gaps are not counted)
-    if (lastStatusAt && s.isDown) active.headDownMs += Math.min(now - lastStatusAt, 2000);
-    active.alerts = Math.max(active.alerts, s.alerts);
-    active.longestDownSec = Math.max(active.longestDownSec, s.downSec);
-    active.lastSeen = now;
-    if (now - lastActiveSave > 5000) { saveJSON(ACTIVE_KEY, active); lastActiveSave = now; }
-  } else if (active) {
-    finishSession();
+  // The last running session we saw is gone (glasses restarted or a new session began):
+  // save it from the last numbers we have, marked partial
+  if (live && live.id !== s.id) {
+    addToHistory(Object.assign({}, live, { partial: true }));
+    live = null;
+    try { localStorage.removeItem(LIVE_KEY); } catch (e) {}
   }
 
-  lastStatusAt = now;
+  if (s.id && s.session) {
+    live = {
+      restless: restSession,
+      posture: postureNow ? postureNow.score : null,
+      avgAngle: postureNow ? postureNow.avg : null,
+      pastSec: postureNow ? postureNow.pastSec : null,
+      id: s.id,
+      start: now - s.lengthSec * 1000,
+      end: now,
+      alerts: s.alerts,
+      headDownMs: s.downTotalSec * 1000,
+      longestDownSec: s.longestSec,
+      partial: false,
+      pomo: s.pomo,
+      pausedSec: pausedNowSec
+    };
+    if (now - lastLiveSave > 5000) { saveJSON(LIVE_KEY, live); lastLiveSave = now; }
+  } else if (s.id && !s.session) {
+    // Finished session: the glasses hold its final numbers until the next session starts.
+    // Wait for the first extra update after connecting, so the restlessness score is included.
+    if (extraChar && !extraSeen) { updateLiveSession(); return; }
+    const end = now - s.sinceEndSec * 1000;
+    addToHistory({
+      id: s.id,
+      start: end - s.lengthSec * 1000,
+      end: end,
+      alerts: s.alerts,
+      headDownMs: s.downTotalSec * 1000,
+      longestDownSec: s.longestSec,
+      partial: false,
+      timerDone: s.timerDone,
+      pomo: s.pomo,
+      pausedSec: pausedNowSec,
+      restless: restSession,
+      posture: postureNow ? postureNow.score : null,
+      avgAngle: postureNow ? postureNow.avg : null,
+      pastSec: postureNow ? postureNow.pastSec : null
+    });
+    if (live) { live = null; try { localStorage.removeItem(LIVE_KEY); } catch (e) {} }
+  }
   updateLiveSession();
 }
 
 function sessionTrackerDisconnected() {
-  lastStatusAt = null;
-  if (active) { active.partial = true; saveJSON(ACTIVE_KEY, active); }
+  if (live) saveJSON(LIVE_KEY, live);
   updateLiveSession();
 }
 
-function finishSession() {
-  const rec = {
-    start: active.start,
-    end: active.lastSeen,
-    alerts: active.alerts,
-    headDownMs: active.headDownMs,
-    longestDownSec: active.longestDownSec,
-    partial: active.partial
-  };
-  // Skip accidental sessions shorter than 10 seconds
-  if (rec.end - rec.start >= 10000) {
-    history.unshift(rec);
-    if (history.length > MAX_SESSIONS) history.length = MAX_SESSIONS;
-    saveJSON(HISTORY_KEY, history);
-  }
-  active = null;
-  try { localStorage.removeItem(ACTIVE_KEY); } catch (e) {}
-  renderHistory();
-}
-
 function updateLiveSession() {
-  if (active) {
-    const dur = active.lastSeen - active.start;
+  if (live && connState === 'on') {
+    const dur = live.end - live.start;
     $('elapsedValue').textContent = fmtDuration(dur);
-    $('alertsValue').textContent = active.alerts;
-    $('downTotalValue').textContent = fmtDuration(active.headDownMs) + ' (' + pct(active.headDownMs, dur) + ')';
+    $('alertsValue').textContent = live.alerts;
+    $('downTotalValue').textContent = fmtDuration(live.headDownMs) + ' (' + pct(live.headDownMs, dur) + ')';
   } else {
     $('elapsedValue').textContent = '--';
     $('downTotalValue').textContent = '--';
     if (!sessionOn) $('alertsValue').textContent = '--';
   }
+  if (document.querySelector('#screen-history.active')) renderHistory();
+  else if (document.querySelector('#screen-tools.active')) renderGoal();
+  else if (document.querySelector('#screen-stats.active')) renderScore();
 }
 
 function summarize(list) {
@@ -853,12 +2218,17 @@ function summarize(list) {
 }
 
 function renderHistory() {
+  if (typeof renderRestToday === 'function') renderRestToday();
+  if (typeof renderPosture === 'function') renderPosture();
+  renderScore();
+  renderGoal();
   const now = new Date();
   const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
   const weekAgo = startOfToday - 6 * 86400000;
 
-  const today = summarize(history.filter(r => r.start >= startOfToday));
-  const week  = summarize(history.filter(r => r.start >= weekAgo));
+  const all = live ? [Object.assign({ inProgress: true }, live)].concat(history) : history;
+  const today = summarize(all.filter(r => r.start >= startOfToday));
+  const week  = summarize(all.filter(r => r.start >= weekAgo));
 
   $('todaySessions').textContent = today.count;
   $('todayTime').textContent = fmtDuration(today.time);
@@ -871,11 +2241,11 @@ function renderHistory() {
 
   const listEl = $('sessionList');
   listEl.innerHTML = '';
-  if (history.length === 0) {
+  if (all.length === 0) {
     listEl.innerHTML = '<div class="muted">No sessions yet. Start one from the Home tab.</div>';
     return;
   }
-  history.slice(0, 100).forEach(r => {
+  all.slice(0, 100).forEach(r => {
     const d = new Date(r.start);
     const dur = r.end - r.start;
     const item = document.createElement('div');
@@ -884,24 +2254,38 @@ function renderHistory() {
       '<div class="session-head"><span>' +
         d.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' }) + ', ' +
         d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' }) +
+        (r.inProgress ? '<span class="tag">in progress</span>' : '') +
         (r.partial ? '<span class="tag">partial</span>' : '') +
+        (r.timerDone ? '<span class="tag">timer done</span>' : '') +
+        (r.pomo ? '<span class="tag">pomodoro</span>' : '') +
       '</span><span>' + fmtDuration(dur) + '</span></div>' +
       '<div class="session-meta">' + r.alerts + ' alert' + (r.alerts === 1 ? '' : 's') +
         ' · head down ' + fmtDuration(r.headDownMs) + ' (' + pct(r.headDownMs, dur) + ')' +
-        ' · longest ' + fmtSeconds(r.longestDownSec) + '</div>';
+        ' · longest ' + fmtSeconds(r.longestDownSec) +
+        (r.restless !== null && r.restless !== undefined ? ' · restless ' + r.restless + '%' : '') +
+        (r.posture !== null && r.posture !== undefined ? ' · posture ' + r.posture : '') +
+        (r.pausedSec >= 60 ? ' · off ' + fmtDuration(r.pausedSec * 1000) : '') +
+        (focusScore(r) !== null ? ' · score ' + focusScore(r) : '') + '</div>';
     listEl.appendChild(item);
   });
 }
 
 function exportCSV() {
   if (history.length === 0) { showMessage('No sessions to export.', true); return; }
-  const rows = [['start', 'end', 'duration_min', 'alerts', 'head_down_min', 'head_down_pct', 'longest_head_down_s', 'partial']];
+  const rows = [['start', 'end', 'duration_min', 'alerts', 'head_down_min', 'head_down_pct', 'longest_head_down_s', 'restless_pct', 'posture_score', 'avg_head_angle_deg', 'past_15deg_min', 'paused_min', 'focus_score', 'partial']];
   history.forEach(r => {
     const dur = r.end - r.start;
     rows.push([
       new Date(r.start).toISOString(), new Date(r.end).toISOString(),
       (dur / 60000).toFixed(1), r.alerts, (r.headDownMs / 60000).toFixed(1),
-      dur > 0 ? (r.headDownMs / dur * 100).toFixed(1) : '0', r.longestDownSec, r.partial ? 'yes' : 'no'
+      dur > 0 ? (r.headDownMs / dur * 100).toFixed(1) : '0', r.longestDownSec,
+      (r.restless !== null && r.restless !== undefined) ? r.restless : '',
+      (r.posture !== null && r.posture !== undefined) ? r.posture : '',
+      (r.avgAngle !== null && r.avgAngle !== undefined) ? r.avgAngle : '',
+      (r.pastSec !== null && r.pastSec !== undefined) ? (r.pastSec / 60).toFixed(1) : '',
+      r.pausedSec ? (r.pausedSec / 60).toFixed(1) : '0',
+      focusScore(r) !== null ? focusScore(r) : '',
+      r.partial ? 'yes' : 'no'
     ]);
   });
   const csv = rows.map(r => r.join(',')).join('\n');
@@ -919,6 +2303,7 @@ function clearHistory() {
   if (!confirm('Delete all session history on this phone? This cannot be undone.')) return;
   history = [];
   saveJSON(HISTORY_KEY, history);
+  saveJSON(CLEARED_KEY, Date.now());
   renderHistory();
   showMessage('History cleared.');
 }
@@ -926,12 +2311,53 @@ function clearHistory() {
 // ---------------- Wire up ----------------
 $('mainBtn').addEventListener('click', mainButton);
 $('scanBtn').addEventListener('click', chooseDevice);
-$('sessionBtn').addEventListener('click', () => sendCommand(sessionOn ? 2 : 1));
+$('sessionBtn').addEventListener('click', startOrStopSession);
+document.querySelectorAll('#timerPicker .chip').forEach(c => c.addEventListener('click', () => selectTimerChip(c.dataset.min)));
+$('timerH').value = timerChoice.h; $('timerM').value = timerChoice.m;
+selectTimerChip(timerChoice.preset);
+['timerH', 'timerM'].forEach(id => $(id).addEventListener('input', () => showMessage('')));
 $('saveBtn').addEventListener('click', () => saveSettings(false));
 $('strengthInput').addEventListener('input', () => $('strengthValue').textContent = $('strengthInput').value);
 $('strengthInput').addEventListener('change', () => saveSettings(true));
 patternInputs.forEach(r => r.addEventListener('change', () => saveSettings(true)));
 cmdButtons.forEach(b => b.addEventListener('click', () => sendCommand(Number(b.dataset.cmd))));
+$('breakToggle').addEventListener('change', () => saveSettings(false));
+$('pauseToggle').addEventListener('change', () => saveSettings(false));
+document.querySelectorAll('.pause-chip').forEach(c => c.addEventListener('click', () => {
+  selectPauseChip(Number(c.dataset.min));
+  saveSettings(false);
+}));
+document.querySelectorAll('.break-chip').forEach(c => c.addEventListener('click', () => {
+  selectBreakChip(Number(c.dataset.min));
+  saveSettings(false);
+}));
+$('breakTestBtn').addEventListener('click', () => sendCommand(7));
+$('tickToggle').addEventListener('change', () => saveSettings(false));
+document.querySelectorAll('.tick-chip').forEach(c => c.addEventListener('click', () => {
+  selectTickChip(Number(c.dataset.min));
+  saveSettings(false);
+}));
+$('tickTestBtn').addEventListener('click', () => sendCommand(10));
+document.querySelectorAll('.breath-pattern').forEach(c => c.addEventListener('click', () => {
+  breathPrefs.pattern = Number(c.dataset.p); saveJSON(BREATH_KEY, breathPrefs); renderBreathPrefs();
+}));
+document.querySelectorAll('.breath-min').forEach(c => c.addEventListener('click', () => {
+  breathPrefs.minutes = Number(c.dataset.m); saveJSON(BREATH_KEY, breathPrefs); renderBreathPrefs();
+}));
+$('breathStartBtn').addEventListener('click', startBreathing);
+$('breathStopBtn').addEventListener('click', () => { breath.endsAt = 0; sendCommand(12); });
+renderBreathPrefs();
+$('stepsToggle').addEventListener('change', () => {
+  showStepsStats($('stepsToggle').checked);
+  saveSettings(false);
+});
+renderSteps(null);
+showStepsStats(loadJSON(STEPS_ON_KEY, false));
+document.querySelectorAll('.step').forEach(b => b.addEventListener('click', () => stepPomo(b.dataset.k, Number(b.dataset.d))));
+$('pomoStartBtn').addEventListener('click', startPomodoro);
+$('pomoSkipBtn').addEventListener('click', () => sendCommand(9));
+$('pomoStopBtn').addEventListener('click', () => sendCommand(2));
+renderPomoPrefs();
 $('exportBtn').addEventListener('click', exportCSV);
 $('clearBtn').addEventListener('click', clearHistory);
 ['angleInput', 'delayInput', 'repeatInput'].forEach(id =>
